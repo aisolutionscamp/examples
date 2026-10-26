@@ -4,5 +4,6 @@ __pycache__/
 .ruff_cache/
 .venv/
 *.pyc
-data/
+# Generated outputs. Example input data under examples/*/data/ is committed.
+/data/
 models/

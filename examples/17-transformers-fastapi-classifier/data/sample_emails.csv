@@ -1,0 +1,25 @@
+subject,body,urgency,department
+Site down,"Your dashboard has been down for 30 minutes, none of our users can log in. Please fix this immediately.",HIGH,TECHNICAL
+API 500 errors,"Since the last release every call to /v2/orders returns HTTP 500. Our checkout is broken.",HIGH,TECHNICAL
+Payment failed,"My card payment failed three times and now my account is suspended. I need this solved today.",HIGH,BILLING
+Charged twice,"I was charged twice for the March invoice. Please refund the duplicate payment.",MEDIUM,BILLING
+Invoice address,"Can you change the billing address on my invoices to our new office?",LOW,BILLING
+Refund request,"I cancelled within the trial period, please refund my subscription fee.",MEDIUM,BILLING
+Export bug,"The CSV export cuts off after 1000 rows. Is this a known bug?",MEDIUM,TECHNICAL
+Webhook question,"How do I verify the signature of your webhooks? I could not find it in the docs.",LOW,TECHNICAL
+Enterprise plan,"We are a team of 200 and would like a quote for the enterprise plan with SSO.",LOW,SALES
+Upgrade,"How do I upgrade from the starter plan to the business plan?",LOW,SALES
+Demo request,"Could we book a demo for our sales team next week?",LOW,SALES
+Volume discount,"Do you offer volume discounts for more than 50 licenses?",LOW,SALES
+Password reset,"The password reset link does not arrive. I checked my spam folder.",MEDIUM,SUPPORT
+Change email,"How can I change the email address of my account?",LOW,SUPPORT
+Account locked,"My account is locked after too many login attempts, can you unlock it?",MEDIUM,SUPPORT
+Thanks,"Just wanted to say thank you for the quick help yesterday.",LOW,SUPPORT
+Servicio caído,"La plataforma no funciona desde esta mañana, es urgente, nuestros clientes no pueden pagar.",HIGH,TECHNICAL
+Factura duplicada,"Me han cobrado dos veces la factura de abril, necesito el reembolso.",MEDIUM,BILLING
+Licencias,"Queremos comprar 30 licencias más, ¿pueden enviarnos un presupuesto?",LOW,SALES
+Contraseña,"No puedo cambiar mi contraseña, el enlace no funciona.",MEDIUM,SUPPORT
+Ausfall,"Die API ist komplett ausgefallen, alle Anfragen schlagen fehl. Bitte sofort prüfen.",HIGH,TECHNICAL
+Rechnung,"Auf der Rechnung fehlt unsere Umsatzsteuer-ID, bitte korrigieren.",LOW,BILLING
+Angebot,"Wir möchten ein Angebot für 100 Nutzer mit jährlicher Zahlung.",LOW,SALES
+Konto gesperrt,"Mein Konto ist gesperrt und ich komme nicht mehr hinein.",MEDIUM,SUPPORT

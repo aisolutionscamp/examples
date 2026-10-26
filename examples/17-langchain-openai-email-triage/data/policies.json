@@ -1,0 +1,9 @@
+[
+  "Refunds: orders can be refunded within 30 days of delivery. Refunds are issued to the original payment method within 5 to 10 business days after approval by the billing team.",
+  "Invoices: invoices are available in the customer portal under Billing > Invoices. A copy can also be requested from billing@example.com.",
+  "Password reset: customers can reset their password at https://app.example.com/reset. Reset links expire after 60 minutes.",
+  "Two-factor authentication: if a customer lost their 2FA device, an agent must verify identity before 2FA can be removed.",
+  "Shipping: standard shipping takes 3 to 5 business days within the EU. Tracking links are sent by email when the order ships.",
+  "API rate limits: the public API allows 600 requests per minute per API key. Error code 429 means the limit was reached.",
+  "Plan upgrades: customers can upgrade from Settings > Plan at any time; the price difference is prorated."
+]
