@@ -1,0 +1,4 @@
+{
+  "name": "Example Market, Main Street",
+  "aisles": ["produce", "bakery", "meat_fish", "dairy", "pantry", "beverages", "frozen", "household", "other"]
+}

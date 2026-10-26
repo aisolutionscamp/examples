@@ -1,0 +1,5 @@
+# Optional: transcribe the audio locally when a video has no captions.
+# yt-dlp needs ffmpeg on the system (apt-get install ffmpeg).
+-r requirements.txt
+faster-whisper==1.2.1
+yt-dlp==2026.10.21

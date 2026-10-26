@@ -1,0 +1,4 @@
+# Optional: speech input (faster-whisper) and local speech output (Piper).
+-r requirements.txt
+faster-whisper==1.2.1
+piper-tts==1.8.0

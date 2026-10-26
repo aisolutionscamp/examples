@@ -1,0 +1,14 @@
+{
+  "id": 19,
+  "title": "Document Processing & Information Extraction Pipeline",
+  "description": "<p>Many teams still type data from PDFs, scans and photos into their systems by hand: invoices, contracts, forms. The goal is a pipeline that reads these documents automatically and returns structured data that other systems can use.</p><h3>Requirements</h3><ul><li><strong>Formats:</strong> PDFs with a text layer, scanned PDFs and images (PNG, JPG, TIFF).</li><li><strong>Extraction:</strong> OCR plus field extraction (parties, dates, amounts, invoice numbers, line items).</li><li><strong>Document types:</strong> recognize invoices, contracts and other documents and apply the right extraction.</li><li><strong>Validation:</strong> check completeness and consistency (for example subtotal + tax = total) and send doubtful documents to a person.</li></ul><p>The pipeline has to handle high document volumes reliably, and some organizations need it to run without sending documents to a cloud service.</p>",
+  "goals": "<ul><li>At least 95 % of key fields extracted correctly on a labelled sample of real documents.</li><li>Less than 10 seconds processing time per document.</li><li>Throughput of 1,000+ documents per hour.</li><li>PDF, PNG, JPG and TIFF supported; every document that fails a check is flagged for review instead of passed on.</li></ul>",
+  "tags": [
+    "Cross-industry",
+    "document-processing",
+    "ocr",
+    "information-extraction",
+    "workflow-automation",
+    "compliance"
+  ]
+}

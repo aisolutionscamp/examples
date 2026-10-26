@@ -1,0 +1,205 @@
+{
+  "solutionId": 18,
+  "projectId": 22,
+  "title": "Real-time Fraud Scoring with XGBoost",
+  "description": "<p>Scores every card-not-present payment with an <strong>XGBoost</strong> model before it is authorized. The core is point-in-time feature engineering: for each transaction the service looks up the user's recent transactions and running profile in a feature store and computes velocity and behavior features such as transactions in the last 10 minutes, amount compared with the user's average, new device and foreign country.</p><ul><li>The same feature code builds the training set (by replaying history in time order) and serves live requests, so training and serving cannot drift apart.</li><li>Each decision is <code>approve</code>, <code>review</code> (step-up verification) or <code>block</code>, with the three features that pushed the score up the most (XGBoost SHAP contributions) as reasons.</li><li>The review threshold is chosen on a later time period for a target false-positive rate, not hard-coded.</li><li>Optional adapters: <strong>Redis</strong> as a shared feature store, an <strong>Apache Kafka</strong> worker that scores a transaction topic, and <strong>Elasticsearch</strong> for indexing decisions.</li></ul><p>The example trains and tests on a synthetic transaction stream. Train on your own labeled chargebacks before using it.</p>",
+  "aiTools": [
+    "XGBoost",
+    "scikit-learn",
+    "FastAPI",
+    "Redis",
+    "Apache Kafka (confluent-kafka)",
+    "Elasticsearch"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Define the transaction event (user, amount, country, device, merchant category, timestamp) and a feature store interface with recent(), profile() and record().",
+    "Write the feature function once: velocity counts for 10 minutes and 1 hour, amount sum, amount relative to the user's mean, foreign country, new device, distinct countries in 24 hours, time since the last transaction.",
+    "Build the training set by replaying labeled transactions in time order through an in-memory store, so each row only sees its past.",
+    "Split by time (train, threshold period, test period) and train an XGBClassifier with scale_pos_weight for the class imbalance.",
+    "Pick the review threshold on the threshold period for a target false-positive rate and report precision, recall and false-positive rate on the test period.",
+    "Serve the model with FastAPI: POST /score returns score, action and reasons from SHAP contributions, and records the transaction in the store after scoring.",
+    "For several workers, switch to the Redis feature store (sorted set of recent transactions plus a profile hash per user).",
+    "Optionally run the Kafka worker, which scores a transactions topic, publishes decisions to a second topic and indexes them in Elasticsearch.",
+    "Retrain regularly on confirmed fraud and chargebacks, and watch the review rate and score distribution for drift."
+  ],
+  "performance": "<p><strong>Targets, not measured results:</strong></p><ul><li>Scoring latency in the low milliseconds per transaction for the model and in-memory features; with Redis add one network round trip.</li><li>Target false-positive rate below 0.5 % at the review threshold (configurable with <code>--max-fpr</code>), with recall as high as possible at that rate.</li><li>The tests check ROC AUC above 0.95 on the synthetic stream. Synthetic fraud is much easier to separate than real fraud, so these numbers say nothing about production quality. Measure on your own labeled data.</li></ul>",
+  "userExperience": "<p>The checkout or payment service calls one HTTP endpoint and gets back a score, an action and short reasons such as <code>txn_count_10m</code>, <code>new_device</code> or <code>foreign_country</code>. Legitimate customers are approved without extra steps; risky payments trigger step-up verification (for example 3-D Secure) instead of a hard decline, and only very high scores are blocked. Fraud analysts can search the decisions in Elasticsearch.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "payments",
+        "type": "api",
+        "label": "Payment Service / Kafka topic",
+        "color": "#06b6d4",
+        "position": {
+          "x": 50,
+          "y": 200
+        }
+      },
+      {
+        "id": "api",
+        "type": "api",
+        "label": "Scoring API (FastAPI) or Kafka worker",
+        "color": "#06b6d4",
+        "position": {
+          "x": 300,
+          "y": 200
+        }
+      },
+      {
+        "id": "store",
+        "type": "storage",
+        "label": "Feature Store (memory or Redis)",
+        "color": "#6b7280",
+        "position": {
+          "x": 300,
+          "y": 50
+        }
+      },
+      {
+        "id": "features",
+        "type": "preprocessing",
+        "label": "Velocity & Behavior Features",
+        "color": "#f59e0b",
+        "position": {
+          "x": 550,
+          "y": 200
+        }
+      },
+      {
+        "id": "model",
+        "type": "model",
+        "label": "XGBoost Classifier",
+        "color": "#3b82f6",
+        "position": {
+          "x": 800,
+          "y": 200
+        }
+      },
+      {
+        "id": "decision",
+        "type": "inference",
+        "label": "Decision + SHAP Reasons",
+        "color": "#10b981",
+        "position": {
+          "x": 1050,
+          "y": 200
+        }
+      },
+      {
+        "id": "es",
+        "type": "monitoring",
+        "label": "Elasticsearch (decisions)",
+        "color": "#ec4899",
+        "position": {
+          "x": 1050,
+          "y": 50
+        }
+      },
+      {
+        "id": "history",
+        "type": "dataset",
+        "label": "Labeled History (synthetic here)",
+        "color": "#64748b",
+        "position": {
+          "x": 550,
+          "y": 380
+        }
+      },
+      {
+        "id": "training",
+        "type": "training",
+        "label": "Time-based Training & Threshold",
+        "color": "#8b5cf6",
+        "position": {
+          "x": 800,
+          "y": 380
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "payments",
+        "target": "api",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "api",
+        "target": "store",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "store",
+        "target": "features",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "api",
+        "target": "features",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "features",
+        "target": "model",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "model",
+        "target": "decision",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "decision",
+        "target": "payments",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "decision",
+        "target": "es",
+        "type": "connection"
+      },
+      {
+        "id": "e9",
+        "source": "history",
+        "target": "training",
+        "type": "connection"
+      },
+      {
+        "id": "e10",
+        "source": "training",
+        "target": "model",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/fraud/scoring.py",
+  "externalLinks": [
+    {
+      "title": "XGBoost Python package",
+      "url": "https://xgboost.readthedocs.io/en/stable/python/index.html"
+    },
+    {
+      "title": "XGBoost: SHAP contributions (pred_contribs)",
+      "url": "https://xgboost.readthedocs.io/en/stable/prediction.html"
+    },
+    {
+      "title": "FastAPI",
+      "url": "https://fastapi.tiangolo.com/"
+    },
+    {
+      "title": "confluent-kafka Python client",
+      "url": "https://docs.confluent.io/kafka-clients/python/current/overview.html"
+    }
+  ]
+}

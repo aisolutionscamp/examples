@@ -1,0 +1,211 @@
+{
+  "solutionId": 21,
+  "projectId": 25,
+  "title": "Anonymous People and Vehicle Counting with YOLO and ONNX Runtime",
+  "description": "<p>Counts people, bicycles, cars, buses and trucks in a camera stream and reports only aggregate numbers per time interval: how many crossed a counting line in each direction, and how many were inside a zone (maximum and mean occupancy).</p><ul><li>Detection with a pretrained <strong>YOLO11</strong> model exported to ONNX and run with <strong>ONNX Runtime</strong> on the CPU (no PyTorch at runtime). Only the counted classes are kept.</li><li>A simple overlap (IoU) tracker gives each object a short-lived number while it is in view, so it is counted once when it crosses the line. No appearance features are stored and no one is re-identified.</li><li><strong>Privacy by design:</strong> no face detection or face recognition, no identification of individuals, frames are processed in memory and never written to disk, only per-interval counts leave the process, and the optional live preview pixelates every person.</li></ul><p>Typical uses: footfall at entrances, pedestrian and cycle counts on a street, occupancy of a square or a platform, traffic volume by vehicle type.</p>",
+  "aiTools": [
+    "YOLO11 (Ultralytics, exported to ONNX)",
+    "ONNX Runtime",
+    "OpenCV"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Before installing cameras, document purpose, legal basis and retention (for example a data protection impact assessment under GDPR) and put up signage.",
+    "Export a pretrained detector once: pip install ultralytics, then yolo export model=yolo11n.pt format=onnx, and copy yolo11n.onnx to models/.",
+    "Mount the camera so it sees the area from above or at an angle where faces are small; set the counting line and zone in pixel coordinates.",
+    "Run python -m counting with --source (RTSP URL or video file), --line and/or --zone and the aggregation interval.",
+    "The detector letterboxes each frame to 640 x 640, runs ONNX Runtime, filters to person and vehicle classes and applies non-maximum suppression.",
+    "The IoU tracker assigns temporary ids; the line counter counts direction changes across the line, the zone counter counts objects inside the polygon.",
+    "Every interval, one JSON record with crossings and occupancy is printed; send these records to your database or dashboard, nothing else.",
+    "Check the counts against a manual count for a few intervals per camera and adjust confidence, line position and frame rate."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>YOLO11n at 640 x 640 on a recent laptop CPU typically handles several frames per second; processing every second or third frame is usually enough for counting walking people.</li><li>Goal: counts within about 10 % of a manual count for unobstructed views. Dense crowds, occlusion, low light and steep camera angles lower the accuracy; validate per camera.</li><li>The tests use a mocked detector and synthetic frames; they check the YOLO output parsing, tracking, line crossing, occupancy and that nothing but aggregates is produced.</li></ul>",
+  "userExperience": "<p>Operators see numbers, not people: a dashboard or report with counts per interval and direction, peak and average occupancy per zone and vehicle mix per hour. During setup, an optional preview window shows the line, zone and pixelated person boxes so the camera position can be checked. No footage is recorded by this tool.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "camera",
+        "type": "dataset",
+        "label": "Camera Stream (RTSP / file)",
+        "color": "#64748b",
+        "position": {
+          "x": 50,
+          "y": 200
+        }
+      },
+      {
+        "id": "letterbox",
+        "type": "preprocessing",
+        "label": "Letterbox 640 x 640",
+        "color": "#f59e0b",
+        "position": {
+          "x": 280,
+          "y": 200
+        }
+      },
+      {
+        "id": "yolo",
+        "type": "model",
+        "label": "YOLO11 ONNX (ONNX Runtime)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 510,
+          "y": 200
+        }
+      },
+      {
+        "id": "nms",
+        "type": "inference",
+        "label": "Class Filter + NMS",
+        "color": "#10b981",
+        "position": {
+          "x": 740,
+          "y": 200
+        }
+      },
+      {
+        "id": "tracker",
+        "type": "inference",
+        "label": "IoU Tracker (temporary ids)",
+        "color": "#10b981",
+        "position": {
+          "x": 970,
+          "y": 200
+        }
+      },
+      {
+        "id": "line",
+        "type": "inference",
+        "label": "Line Crossings",
+        "color": "#10b981",
+        "position": {
+          "x": 1200,
+          "y": 100
+        }
+      },
+      {
+        "id": "zone",
+        "type": "inference",
+        "label": "Zone Occupancy",
+        "color": "#10b981",
+        "position": {
+          "x": 1200,
+          "y": 300
+        }
+      },
+      {
+        "id": "agg",
+        "type": "api",
+        "label": "Interval Aggregates (JSON)",
+        "color": "#06b6d4",
+        "position": {
+          "x": 1430,
+          "y": 200
+        }
+      },
+      {
+        "id": "dashboard",
+        "type": "monitoring",
+        "label": "Dashboard / Database",
+        "color": "#ec4899",
+        "position": {
+          "x": 1660,
+          "y": 200
+        }
+      },
+      {
+        "id": "preview",
+        "type": "monitoring",
+        "label": "Optional Pixelated Preview",
+        "color": "#ec4899",
+        "position": {
+          "x": 740,
+          "y": 380
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "camera",
+        "target": "letterbox",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "letterbox",
+        "target": "yolo",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "yolo",
+        "target": "nms",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "nms",
+        "target": "tracker",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "tracker",
+        "target": "line",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "tracker",
+        "target": "zone",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "line",
+        "target": "agg",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "zone",
+        "target": "agg",
+        "type": "connection"
+      },
+      {
+        "id": "e9",
+        "source": "agg",
+        "target": "dashboard",
+        "type": "connection"
+      },
+      {
+        "id": "e10",
+        "source": "nms",
+        "target": "preview",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/counting/pipeline.py",
+  "externalLinks": [
+    {
+      "title": "Ultralytics YOLO11",
+      "url": "https://docs.ultralytics.com/models/yolo11/"
+    },
+    {
+      "title": "Ultralytics: export to ONNX",
+      "url": "https://docs.ultralytics.com/integrations/onnx/"
+    },
+    {
+      "title": "ONNX Runtime Python API",
+      "url": "https://onnxruntime.ai/docs/api/python/"
+    },
+    {
+      "title": "EU AI Act (Regulation (EU) 2024/1689)",
+      "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "id": 36,
+  "title": "Smart Password Generator & Checker",
+  "description": "<p>Users pick short, reused or predictable passwords, and many sites still enforce composition rules (one uppercase letter, one digit, one symbol) that make passwords harder to remember without making them much harder to guess. A tool is needed that generates strong passwords and checks existing ones against current guidance.</p><p><strong>Constraints:</strong> follow NIST SP 800-63B: minimum length instead of composition rules, accept long passwords, spaces and Unicode, and reject passwords known from breaches. The password itself must never be sent to a third party; a breach lookup may only use a k-anonymity scheme. Feedback must say why a password is weak.</p>",
+  "goals": "<ul><li>Reject passwords shorter than 15 characters (8 when used as one factor of MFA) and accept at least 64 characters</li><li>Apply no character-class composition rules</li><li>Detect passwords that appear in the Have I Been Pwned breach corpus while sending only a 5-character hash prefix</li><li>Show a strength estimate with concrete reasons and suggestions for every rejected password</li><li>Generate passphrases or passwords with at least 77 bits of entropy using a cryptographically secure random generator</li></ul>",
+  "tags": ["Cybersecurity", "Password Security", "NIST SP 800-63B", "Authentication", "Data Breaches", "Python"]
+}

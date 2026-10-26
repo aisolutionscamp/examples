@@ -1,0 +1,11 @@
+Example Corp
+1 Example Street, Springfield
+INVOICE
+Invoice #: INV-10442
+Date: 03/10/2026
+Due Date: 02/11/2026
+Web design package          1 x 1,200.00
+Hosting (12 months)         1 x 240.00
+Subtotal                    $1,440.00
+Tax (8%)                    $115.20
+Total Due                   $1,555.20

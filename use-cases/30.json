@@ -1,0 +1,14 @@
+{
+  "id": 30,
+  "title": "Financial Market Sentiment Analysis",
+  "description": "<p>Analysts follow far more news than they can read. A measure of the tone of news per company and day helps them see where coverage turns negative or positive and which headlines to read first.</p><p>The goal is a pipeline that scores financial news headlines for sentiment and aggregates the scores per ticker and trading day.</p><ul><li><strong>Data</strong>: headlines with publication time and tickers from a news source whose terms allow automated processing.</li><li><strong>Constraints</strong>: financial language differs from everyday language (\"beat\", \"short\", \"guidance\"), so general-purpose sentiment tools are not enough; news after the market close belongs to the next trading day; syndicated copies of the same headline must not be counted several times.</li><li><strong>Scope</strong>: the result describes the tone of headlines. It is not investment advice and not a price forecast. Any use for trading decisions would need its own out-of-sample evaluation.</li></ul>",
+  "goals": "<ul><li>At least 80 % agreement with a hand-labeled sample of 200 of your own headlines (positive, negative, neutral).</li><li>Clearly better agreement than a general-purpose lexicon baseline (VADER) on the same sample.</li><li>A daily table per ticker with headline count, mean score and positive and negative share, available within an agreed time after the market close.</li><li>Every report built on the output carries the note that it is not investment advice.</li></ul>",
+  "tags": [
+    "Finance",
+    "Sentiment Analysis",
+    "NLP",
+    "News Analysis",
+    "FinBERT",
+    "FinTech"
+  ]
+}

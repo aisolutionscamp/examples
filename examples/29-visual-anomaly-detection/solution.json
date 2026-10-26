@@ -1,0 +1,197 @@
+{
+  "solutionId": null,
+  "projectId": 29,
+  "title": "Visual defect detection as anomaly detection with OpenCV features, IsolationForest and ONNX",
+  "description": "<p>A baseline for automated visual inspection when you have many images of good parts and few or no images of defects. The model learns what good surfaces look like and flags parts that deviate:</p><ul><li><strong>OpenCV patch features</strong>: each image is converted to grayscale, normalised for brightness, resized to 256 x 256 and cut into overlapping 32 x 32 patches. Each patch is described by brightness, contrast, sharpness (Laplacian variance), gradient strength and edge density.</li><li><strong>IsolationForest</strong> (scikit-learn) trained on patches of good parts only. The image score is the score of its most unusual patch, so one small scratch is enough. The patch scores also give a coarse heatmap and a box around the suspicious area.</li><li><strong>Threshold calibration</strong> on held-out images: either a quantile of good-part scores or, if you have labeled defects, the threshold with the highest defect recall within an allowed false-reject rate (default 1 %).</li><li><strong>ONNX export</strong> with skl2onnx: the scaler and IsolationForest run in onnxruntime on an edge PC; the tests check that the scores match scikit-learn.</li></ul><p>This is the classical starting point. Deep-feature methods such as PatchCore (pretrained CNN features with a nearest-neighbour memory bank) usually detect subtler defects; the same train, calibrate, export structure applies to them.</p>",
+  "aiTools": [
+    "OpenCV",
+    "scikit-learn",
+    "skl2onnx",
+    "ONNX Runtime",
+    "NumPy"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Collect images of good parts under fixed lighting and camera position, and split them into a training set and a calibration set; keep any images of real defects for calibration and testing.",
+    "Preprocess each image with OpenCV: grayscale, resize to 256 x 256, shift the median brightness to a fixed level.",
+    "Cut the image into overlapping 32 x 32 patches (stride 16) and compute per-patch features: mean, standard deviation, 2nd and 98th percentile, Laplacian variance, mean and max gradient, Canny edge density.",
+    "Fit a StandardScaler + IsolationForest pipeline on the patches of good training images only.",
+    "Score an image by its most unusual patch and keep the patch scores as a heatmap to show where the defect is.",
+    "Calibrate the decision threshold on held-out images so that at most 1 % of good parts are rejected, maximising defect recall if labeled defects are available.",
+    "Export the scaler and IsolationForest to ONNX with skl2onnx and run them with onnxruntime on the line PC; verify the scores against scikit-learn.",
+    "Evaluate on a public benchmark such as MVTec AD or on your own labeled test set before using the result to reject parts."
+  ],
+  "performance": "<p><strong>Targets, not measured results.</strong> The tests use synthetic surfaces with drawn scratches, spots and cracks and require an image-level ROC AUC above 0.95 and that the most unusual patch lies on the defect. Real parts are harder.</p><ul><li>Suggested acceptance criteria: false-reject rate of good parts at most 1 %, defect recall at least 95 % on a labeled test set of real defects, per defect type.</li><li>Feature extraction plus scoring took roughly 0.1 to 0.15 s per 256 x 256 image (225 patches) in a single test run on a shared desktop CPU. The per-patch Python loop is the bottleneck; vectorise it (box filters on whole-image maps) if the line needs more throughput, and measure on your hardware.</li><li>The resolution is limited by the patch size: defects much smaller than a 32 x 32 patch at 256 x 256 (about 1/8 of the image width) may be missed. Use tiles of the original image or a higher input size for small defects.</li></ul>",
+  "userExperience": "<p>The inspection station calls <code>predict()</code> (or the ONNX scorer) for each image and gets <code>{\"score\": 0.24, \"threshold\": 0.19, \"defect\": true, \"box\": {\"x\": 96, \"y\": 64, \"w\": 32, \"h\": 32}}</code>. The box marks the most unusual area for the operator, who confirms or overrides the decision. The CLI trains, calibrates, exports and scores folders of images, and <code>python -m qc.cli demo</code> shows the full flow on synthetic images.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "images",
+        "type": "dataset",
+        "label": "Images of good parts",
+        "color": "#10b981",
+        "position": {
+          "x": 0,
+          "y": 100
+        }
+      },
+      {
+        "id": "preprocess",
+        "type": "preprocessing",
+        "label": "OpenCV: gray, resize, brightness",
+        "color": "#f59e0b",
+        "position": {
+          "x": 260,
+          "y": 100
+        }
+      },
+      {
+        "id": "patches",
+        "type": "preprocessing",
+        "label": "Patch features",
+        "color": "#f59e0b",
+        "position": {
+          "x": 520,
+          "y": 100
+        }
+      },
+      {
+        "id": "train",
+        "type": "training",
+        "label": "Scaler + IsolationForest",
+        "color": "#8b5cf6",
+        "position": {
+          "x": 780,
+          "y": 0
+        }
+      },
+      {
+        "id": "calibrate",
+        "type": "training",
+        "label": "Threshold calibration",
+        "color": "#8b5cf6",
+        "position": {
+          "x": 1040,
+          "y": 0
+        }
+      },
+      {
+        "id": "onnx",
+        "type": "storage",
+        "label": "model.onnx + threshold",
+        "color": "#6b7280",
+        "position": {
+          "x": 1300,
+          "y": 0
+        }
+      },
+      {
+        "id": "camera",
+        "type": "dataset",
+        "label": "Line camera image",
+        "color": "#10b981",
+        "position": {
+          "x": 520,
+          "y": 260
+        }
+      },
+      {
+        "id": "runtime",
+        "type": "inference",
+        "label": "ONNX Runtime scoring",
+        "color": "#ef4444",
+        "position": {
+          "x": 1300,
+          "y": 260
+        }
+      },
+      {
+        "id": "decision",
+        "type": "monitoring",
+        "label": "Pass / reject + defect box",
+        "color": "#ec4899",
+        "position": {
+          "x": 1560,
+          "y": 260
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "images",
+        "target": "preprocess",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "preprocess",
+        "target": "patches",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "patches",
+        "target": "train",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "train",
+        "target": "calibrate",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "calibrate",
+        "target": "onnx",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "camera",
+        "target": "patches",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "patches",
+        "target": "runtime",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "onnx",
+        "target": "runtime",
+        "type": "connection"
+      },
+      {
+        "id": "e9",
+        "source": "runtime",
+        "target": "decision",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/qc/detector.py",
+  "externalLinks": [
+    {
+      "title": "OpenCV documentation",
+      "url": "https://docs.opencv.org/"
+    },
+    {
+      "title": "scikit-learn: IsolationForest",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html"
+    },
+    {
+      "title": "skl2onnx documentation",
+      "url": "https://onnx.ai/sklearn-onnx/"
+    },
+    {
+      "title": "MVTec AD dataset (CC BY-NC-SA 4.0)",
+      "url": "https://www.mvtec.com/company/research/datasets/mvtec-ad"
+    }
+  ]
+}

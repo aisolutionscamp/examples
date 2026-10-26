@@ -1,0 +1,14 @@
+{
+  "name": "faq-chatbot-js",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Embeddable FAQ chatbot for small business websites. Plain JavaScript, no dependencies.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

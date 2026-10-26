@@ -1,0 +1,181 @@
+{
+  "solutionId": 19,
+  "projectId": 23,
+  "title": "CNN Image Classification on DICOM Data (Research Example)",
+  "description": "<p><strong>Research and education example. Not a medical device, not for diagnosis or clinical decisions.</strong></p><p>Shows the technical building blocks of a medical image classification experiment with <strong>TensorFlow/Keras</strong> and <strong>pydicom</strong>:</p><ul><li>DICOM loading: rescale slope and intercept, windowing (Window Center/Width or percentiles), MONOCHROME1 inversion, resize, normalization to [0, 1].</li><li>Removal of direct identifiers (patient name, ID, institution, private tags) before data enters an experiment. This is not a complete de-identification profile.</li><li>Two binary classifiers: a small CNN that trains on CPU in seconds, and transfer learning with an ImageNet-pretrained <strong>ResNet50</strong> backbone and a new head.</li><li>Evaluation with sensitivity and specificity on a held-out split, and Grad-CAM heatmaps to inspect which image regions drive the output.</li></ul><p>The tests use synthetic DICOM files and synthetic images (a bright blob as the \"finding\"), not patient data.</p>",
+  "aiTools": [
+    "TensorFlow",
+    "Keras",
+    "ResNet50 (Keras Applications)",
+    "pydicom",
+    "Grad-CAM"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Get a dataset with a license that allows your use, and approval where your institution requires it. Keep patient data out of the repository.",
+    "Remove direct identifiers with deidentify() or, better, a vetted de-identification tool, and split the data by patient, not by image.",
+    "Load each DICOM file with pydicom: apply rescale slope/intercept, window to [0, 1], invert MONOCHROME1 images and resize to the model input size.",
+    "Start with the small CNN to check the pipeline end to end, then switch to the ResNet50 transfer model with a frozen backbone.",
+    "Train with mild augmentation (small rotation, zoom, contrast; no horizontal flip) and early stopping on a validation split.",
+    "Report sensitivity and specificity on the held-out test split and choose the threshold for the trade-off your study needs.",
+    "Inspect Grad-CAM heatmaps for a sample of images to find shortcuts such as text markers or device artifacts.",
+    "Document data source, splits, metrics and known limitations; an external validation set from another site is needed before any claim about generalization."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>The small CNN trains on 160 synthetic 48 x 48 images on a CPU in well under a minute; the tests require at least 85 % accuracy on that synthetic task, which says nothing about medical images.</li><li>ResNet50 at 224 x 224 needs a GPU for training on real dataset sizes; inference on a CPU takes a fraction of a second per image.</li><li>Report sensitivity and specificity with confidence intervals on a held-out, patient-level split of a public or approved dataset.</li></ul>",
+  "userExperience": "<p>A researcher runs one command to train and gets a JSON report with sensitivity, specificity and accuracy. A Grad-CAM heatmap per image shows where the model looked. There is no clinical user interface: outputs are for experiments and teaching, not for patient care.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "dicom",
+        "type": "dataset",
+        "label": "DICOM Files (per class folder)",
+        "color": "#64748b",
+        "position": {
+          "x": 50,
+          "y": 200
+        }
+      },
+      {
+        "id": "deid",
+        "type": "preprocessing",
+        "label": "Remove Identifiers",
+        "color": "#f59e0b",
+        "position": {
+          "x": 280,
+          "y": 80
+        }
+      },
+      {
+        "id": "load",
+        "type": "preprocessing",
+        "label": "Rescale, Window, Resize",
+        "color": "#f59e0b",
+        "position": {
+          "x": 280,
+          "y": 280
+        }
+      },
+      {
+        "id": "augment",
+        "type": "preprocessing",
+        "label": "Augmentation",
+        "color": "#f59e0b",
+        "position": {
+          "x": 510,
+          "y": 200
+        }
+      },
+      {
+        "id": "model",
+        "type": "model",
+        "label": "Small CNN or ResNet50 Transfer",
+        "color": "#3b82f6",
+        "position": {
+          "x": 740,
+          "y": 200
+        }
+      },
+      {
+        "id": "train",
+        "type": "training",
+        "label": "Training + Early Stopping",
+        "color": "#8b5cf6",
+        "position": {
+          "x": 740,
+          "y": 50
+        }
+      },
+      {
+        "id": "eval",
+        "type": "monitoring",
+        "label": "Sensitivity / Specificity",
+        "color": "#ec4899",
+        "position": {
+          "x": 970,
+          "y": 120
+        }
+      },
+      {
+        "id": "cam",
+        "type": "inference",
+        "label": "Grad-CAM Heatmaps",
+        "color": "#10b981",
+        "position": {
+          "x": 970,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "dicom",
+        "target": "deid",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "dicom",
+        "target": "load",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "deid",
+        "target": "load",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "load",
+        "target": "augment",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "augment",
+        "target": "model",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "train",
+        "target": "model",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "model",
+        "target": "eval",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "model",
+        "target": "cam",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/medimg/model.py",
+  "externalLinks": [
+    {
+      "title": "pydicom documentation",
+      "url": "https://pydicom.github.io/pydicom/stable/"
+    },
+    {
+      "title": "Keras transfer learning guide",
+      "url": "https://keras.io/guides/transfer_learning/"
+    },
+    {
+      "title": "Keras Applications: ResNet50",
+      "url": "https://keras.io/api/applications/resnet/"
+    },
+    {
+      "title": "DICOM PS3.15 Annex E: de-identification profiles",
+      "url": "https://dicom.nema.org/medical/dicom/current/output/chtml/part15/chapter_E.html"
+    }
+  ]
+}

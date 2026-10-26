@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAQ chatbot demo</title>
+  <link rel="stylesheet" href="src/chatbot.css">
+</head>
+<body>
+  <h1>Example Coffee Roasters</h1>
+  <p>Demo page. The chat button is in the bottom right corner.</p>
+  <script type="module">
+    import { mountChatbot } from "./src/chatbot-widget.js";
+    mountChatbot({ knowledgeBaseUrl: "./faq.json" });
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "id": 37,
+  "title": "Smart Shopping List Organizer",
+  "description": "<p>Shopping lists are written in the order items come to mind, so in the store people walk back and forth and forget things. An assistant should turn a free-text note into a list grouped by category and sorted in the order of the aisles of the user's own store.</p><p><strong>Constraints:</strong> notes are short and informal (\"2 kg potatoes, milk and 6 eggs\", \"stuff for pancakes\"); there is no public API for store layouts, so the user describes the layout once; the basic function should work offline without an AI service, with an LLM as an option for messy text.</p>",
+  "goals": "<ul><li>Read item, quantity and unit from typical notes</li><li>Assign every item to a store category, and mark unknown items as \"other\" instead of guessing</li><li>Merge duplicate items with the same unit</li><li>Sort the list by a per-store aisle order that the user can edit</li><li>Keep the rule-based mode working without network access</li></ul>",
+  "tags": ["Retail", "Grocery Shopping", "Shopping List", "Text Parsing", "LLM", "Lifestyle"]
+}

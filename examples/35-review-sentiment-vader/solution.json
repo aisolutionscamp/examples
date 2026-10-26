@@ -1,0 +1,137 @@
+{
+  "solutionId": 26,
+  "projectId": 35,
+  "title": "Restaurant Review Sentiment with VADER",
+  "description": "<p>A lightweight Python tool that reads restaurant reviews from a CSV file and reports how positive or negative they are, overall and per topic: food, service, ambience, price, waiting time and cleanliness.</p><ul><li><strong>VADER</strong> (via the <code>vaderSentiment</code> package) scores each review from -1 to 1. It is rule-based, ships its lexicon inside the package, needs no training data and no API key, and handles negation (\"not good\"), intensifiers and capital letters.</li><li>A small restaurant lexicon adds words VADER treats as neutral, such as \"overpriced\", \"bland\" or \"slow\".</li><li>Reviews are split into clauses (at sentence ends and words such as \"but\"); each clause that mentions a topic keyword gives that topic its score, so \"great food but noisy\" counts as positive for food and negative for ambience.</li><li>The report lists counts and shares of positive, neutral and negative reviews, per-topic averages and the most negative reviews to read first.</li></ul>",
+  "aiTools": [
+    "VADER (vaderSentiment)",
+    "Python csv/json"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Export reviews to a CSV file with one review per row (for example from your review platform or booking system).",
+    "Install the only dependency: pip install -r requirements.txt.",
+    "Run python -m reviews reviews.csv --out-csv results.csv --out-json report.json.",
+    "Each review gets VADER's compound score, labeled positive (>= 0.05), negative (<= -0.05) or neutral.",
+    "Clauses that mention topic keywords give per-topic scores; adjust the keyword lists in ASPECTS for your menu and venue.",
+    "Add words that matter for your reviews to DOMAIN_LEXICON and re-run.",
+    "Read the most negative reviews and the topics with the highest negative share first, and track the shares month by month."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>Thousands of reviews per second on a laptop; no GPU, no network.</li><li>VADER is built for short English texts. Mixed reviews are its weak spot: it weights the clause after \"but\" more, so \"amazing food, but noisy\" comes out negative overall while the topic scores still show the positive food rating.</li><li>Check agreement with star ratings on a sample of your own reviews. If it is too low, train a classifier (for example scikit-learn on labeled reviews) or use a transformer sentiment model.</li></ul>",
+  "userExperience": "<p>The owner runs one command and gets a JSON report (shares of positive, neutral and negative reviews, a score per topic and the most negative reviews) plus a CSV with the score of every review that opens in a spreadsheet. Charts can be built from the CSV in any spreadsheet tool.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "csv",
+        "type": "dataset",
+        "label": "Reviews CSV",
+        "color": "#64748b",
+        "position": {
+          "x": 50,
+          "y": 200
+        }
+      },
+      {
+        "id": "clauses",
+        "type": "preprocessing",
+        "label": "Clause Split + Topic Keywords",
+        "color": "#f59e0b",
+        "position": {
+          "x": 280,
+          "y": 200
+        }
+      },
+      {
+        "id": "vader",
+        "type": "model",
+        "label": "VADER + Restaurant Lexicon",
+        "color": "#3b82f6",
+        "position": {
+          "x": 510,
+          "y": 200
+        }
+      },
+      {
+        "id": "scores",
+        "type": "inference",
+        "label": "Review & Topic Scores",
+        "color": "#10b981",
+        "position": {
+          "x": 740,
+          "y": 200
+        }
+      },
+      {
+        "id": "report",
+        "type": "monitoring",
+        "label": "Summary Report (JSON)",
+        "color": "#ec4899",
+        "position": {
+          "x": 970,
+          "y": 120
+        }
+      },
+      {
+        "id": "results",
+        "type": "storage",
+        "label": "Per-review Results (CSV)",
+        "color": "#6b7280",
+        "position": {
+          "x": 970,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "csv",
+        "target": "clauses",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "csv",
+        "target": "vader",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "clauses",
+        "target": "vader",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "vader",
+        "target": "scores",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "scores",
+        "target": "report",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "scores",
+        "target": "results",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/reviews/analyzer.py",
+  "externalLinks": [
+    {
+      "title": "vaderSentiment on GitHub",
+      "url": "https://github.com/cjhutto/vaderSentiment"
+    },
+    {
+      "title": "VADER paper (ICWSM 2014)",
+      "url": "https://ojs.aaai.org/index.php/ICWSM/article/view/14550"
+    }
+  ]
+}

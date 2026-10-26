@@ -1,0 +1,49 @@
+{
+  "solutionId": null,
+  "projectId": 26,
+  "title": "Adaptive Tutor with Bayesian Knowledge Tracing and LLM-Generated Practice",
+  "description": "<p>A Python tutor that tracks a mastery estimate per skill and decides what to practise next, with an LLM writing the questions and explanations.</p><ul><li><strong>Skill map:</strong> a curriculum JSON with skills and prerequisites (example: fractions).</li><li><strong>Mastery tracking:</strong> Bayesian Knowledge Tracing updates the probability that a skill is mastered after every answer, using slip and guess probabilities.</li><li><strong>Adaptive practice:</strong> the tutor picks the least-mastered skill whose prerequisites are mastered and asks for easy, medium or hard questions depending on mastery.</li><li><strong>LLM via an OpenAI-compatible API:</strong> generates questions with short answers and hints, and explains wrong answers step by step. Grading itself is done locally in code.</li></ul>",
+  "aiTools": ["Python", "Bayesian Knowledge Tracing", "OpenAI Python SDK", "OpenAI API (gpt-6-luna)", "Ollama (optional, local)"],
+  "prompts": "You write one practice question for the skill \"Adding fractions with different denominators\" in the subject \"Fractions (grade 5 to 6 level)\". Difficulty: medium, two steps. The answer must be short and unambiguous (a number, a fraction like 3/4, or one word). Avoid these recent questions: [...]. Answer with JSON only: {\"question\": str, \"answer\": str, \"hint\": str}.",
+  "language": "Python",
+  "implementationSteps": [
+    "Describe the subject as skills with prerequisites in a curriculum JSON and validate the references",
+    "Implement the BKT update: Bayes step with slip and guess, then the learning transition",
+    "Choose the next skill: the least-mastered one whose prerequisites have reached 0.95",
+    "Ask an OpenAI-compatible chat model for a question, answer and hint as JSON, with difficulty set by mastery and recent questions excluded, retrying once on invalid output",
+    "Grade the learner's answer locally, comparing numbers and fractions by value",
+    "Update mastery and attempts, and on a wrong answer request a step-by-step explanation",
+    "Save learner state to a JSON file after every answer",
+    "Test offline: BKT against hand calculations, skill selection, grading and the tutor loop with a fake chat client"
+  ],
+  "performance": "<p><strong>Expectations, not measurements:</strong></p><ul><li>With the default parameters, three correct answers in a row take a skill from 0.2 to above 0.95; wrong answers lower the estimate.</li><li>The default BKT parameters are not fitted to data; fit them per skill on real answer logs before relying on the mastery numbers.</li><li>One chat request per question plus one per wrong answer.</li></ul>",
+  "userExperience": "<p>The learner answers one question at a time in the terminal and sees the skill and current mastery, can ask for a hint, and gets an immediate verdict. After a mistake the tutor explains the steps and the likely misconception. Mastery moves visibly (for example 60% to 89%), and the tutor moves on to new skills only when the prerequisites are mastered. Progress is saved between sessions.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "curriculum", "type": "dataset", "label": "Curriculum JSON (skills, prerequisites)", "color": "#64748b", "position": {"x": 0, "y": 100}},
+      {"id": "select", "type": "inference", "label": "Next-skill selection", "color": "#10b981", "position": {"x": 250, "y": 100}},
+      {"id": "llm_q", "type": "api", "label": "LLM: question + hint (JSON)", "color": "#f59e0b", "position": {"x": 500, "y": 0}},
+      {"id": "grade", "type": "preprocessing", "label": "Local grading (fractions, numbers)", "color": "#3b82f6", "position": {"x": 750, "y": 100}},
+      {"id": "bkt", "type": "model", "label": "Bayesian Knowledge Tracing", "color": "#8b5cf6", "position": {"x": 500, "y": 200}},
+      {"id": "llm_e", "type": "api", "label": "LLM: explanation of mistake", "color": "#f59e0b", "position": {"x": 1000, "y": 0}},
+      {"id": "state", "type": "storage", "label": "Learner state JSON", "color": "#6366f1", "position": {"x": 250, "y": 300}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "curriculum", "target": "select", "type": "connection"},
+      {"id": "e2", "source": "select", "target": "llm_q", "type": "connection"},
+      {"id": "e3", "source": "llm_q", "target": "grade", "type": "connection"},
+      {"id": "e4", "source": "grade", "target": "bkt", "type": "connection"},
+      {"id": "e5", "source": "grade", "target": "llm_e", "type": "connection"},
+      {"id": "e6", "source": "bkt", "target": "state", "type": "connection"},
+      {"id": "e7", "source": "state", "target": "select", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/adaptive_tutor/tutor.py",
+  "externalLinks": [
+    {"title": "Bayesian knowledge tracing (overview)", "url": "https://en.wikipedia.org/wiki/Bayesian_knowledge_tracing"},
+    {"title": "pyBKT: fitting BKT parameters", "url": "https://github.com/CAHLR/pyBKT"},
+    {"title": "OpenAI Python SDK", "url": "https://github.com/openai/openai-python"},
+    {"title": "Ollama OpenAI compatibility", "url": "https://docs.ollama.com/api/openai-compatibility"}
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "solutionId": 24,
+  "projectId": 33,
+  "title": "Social Media Post Generator with Templates",
+  "description": "<p>A Python tool that writes social media posts from a short brief about your business. The OpenAI model writes the parts of a post as structured output (hook, body, call to action, hashtags), and a <strong>Jinja2</strong> template per platform assembles them in the right format.</p><ul><li>Platforms: Instagram, Facebook, LinkedIn and X, each with its own style hint, length limit and hashtag count.</li><li>Posts over the limit are regenerated with feedback (up to 3 attempts).</li><li>Hashtags are cleaned and de-duplicated; the model may only use facts from the brief.</li><li>Several variants per platform are spread over the next weekdays and saved as a CSV schedule for review.</li></ul>",
+  "aiTools": ["OpenAI API", "Jinja2", "Pydantic", "Python csv"],
+  "prompts": "You write social media posts for a small business.\nPlatform: {platform} (style: {style}). The finished post must stay under {max_chars} characters.\nUse only facts from the brief. Do not invent prices, dates, discounts or claims.\nReturn at most {max_hashtags} hashtags.\n\nInput: the brief as JSON (business, business_type, audience, tone, post_type, details, link).",
+  "language": "Python",
+  "implementationSteps": [
+    "Install the pinned dependencies and set OPENAI_API_KEY in .env.",
+    "Write a brief as JSON: business, audience, tone, post type, the facts to mention and an optional link.",
+    "Define the platforms with their length limit, hashtag count and style hint.",
+    "Create one Jinja2 template per platform that arranges hook, body, call to action, link and hashtags.",
+    "Ask the model for the post parts with responses.parse and a Pydantic schema.",
+    "Clean the hashtags, render the template and check the length; regenerate with feedback if it is too long.",
+    "Generate several unique variants per platform.",
+    "Spread the posts over the next weekdays at fixed times per platform and write posts.csv.",
+    "Review the CSV, then import it into your scheduling tool or post by hand."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>One model call per post, a few seconds each; a retry only when a post is too long.</li><li>Every post respects the configured length limit before it is saved.</li><li>Effects on reach or engagement are not known; compare variants in your platform analytics.</li></ul>",
+  "userExperience": "<p>You fill in a short brief and run one command. The tool prints the posts per platform with their planned date and character count and saves them to a CSV file. You edit or delete posts in the CSV and import the rest into your scheduling tool.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "brief", "type": "dataset", "label": "Business Brief (JSON)", "color": "#10b981", "position": {"x": 100, "y": 150}},
+      {"id": "openai", "type": "model", "label": "OpenAI Structured Post Parts", "color": "#3b82f6", "position": {"x": 300, "y": 150}},
+      {"id": "hashtags", "type": "preprocessing", "label": "Hashtag Cleanup", "color": "#f59e0b", "position": {"x": 500, "y": 80}},
+      {"id": "templates", "type": "preprocessing", "label": "Jinja2 Platform Templates", "color": "#f59e0b", "position": {"x": 500, "y": 220}},
+      {"id": "length_check", "type": "monitoring", "label": "Length Check + Retry", "color": "#ec4899", "position": {"x": 700, "y": 150}},
+      {"id": "scheduler", "type": "preprocessing", "label": "Weekday Schedule", "color": "#f59e0b", "position": {"x": 900, "y": 150}},
+      {"id": "csv", "type": "storage", "label": "posts.csv", "color": "#6b7280", "position": {"x": 1100, "y": 150}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "brief", "target": "openai", "type": "connection"},
+      {"id": "e2", "source": "openai", "target": "hashtags", "type": "connection"},
+      {"id": "e3", "source": "openai", "target": "templates", "type": "connection"},
+      {"id": "e4", "source": "hashtags", "target": "templates", "type": "connection"},
+      {"id": "e5", "source": "templates", "target": "length_check", "type": "connection"},
+      {"id": "e6", "source": "length_check", "target": "openai", "type": "connection"},
+      {"id": "e7", "source": "length_check", "target": "scheduler", "type": "connection"},
+      {"id": "e8", "source": "scheduler", "target": "csv", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/social_posts/generator.py",
+  "externalLinks": [
+    {"title": "OpenAI structured outputs", "url": "https://developers.openai.com/api/docs/guides/structured-outputs"},
+    {"title": "Jinja2 template designer documentation", "url": "https://jinja.palletsprojects.com/en/stable/templates/"}
+  ]
+}

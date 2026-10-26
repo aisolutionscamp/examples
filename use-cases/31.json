@@ -1,0 +1,7 @@
+{
+  "id": 31,
+  "title": "Smart Email Auto-Reply System",
+  "description": "<p>Small businesses and freelancers answer the same questions by email every day: prices, availability, order status, opening hours. An email assistant should sort incoming mail into categories and prepare a reply for business inquiries, using only facts the business has provided.</p><h3>Constraints</h3><ul><li>Works with an existing mailbox (for example Gmail) without moving to a new tool.</li><li>Replies are drafts that a person reviews and sends; nothing is sent automatically.</li><li>Newsletters, spam, automated notifications and personal mail get no reply.</li><li>Prices, dates and stock levels must never be invented.</li></ul>",
+  "goals": "<ul><li>Every unread business inquiry has a categorized reply draft in its thread within 15 minutes.</li><li>Drafts need no factual corrections in at least 9 out of 10 cases during a two-week review.</li><li>No replies are drafted for newsletters, spam or automated mail in the review sample.</li><li>Time spent on routine replies drops by half, measured over a typical week.</li></ul>",
+  "tags": ["Cross-industry", "Email Automation", "Customer Service", "Text Classification", "Office Productivity"]
+}

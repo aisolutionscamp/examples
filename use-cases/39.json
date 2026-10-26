@@ -1,0 +1,7 @@
+{
+  "id": 39,
+  "title": "Language Learning Practice Bot",
+  "description": "<p>Language learners rarely get enough speaking and writing practice with someone who corrects them patiently. A practice bot should hold role-play conversations in everyday situations at the learner's level and point out mistakes with short explanations.</p><p><strong>Constraints:</strong> replies must match the learner's level (CEFR A1 to C2); corrections must be shown separately from the conversation so the role play keeps going; speech input and output are useful but optional; automatic speech recognition confidence is not a pronunciation score and must not be presented as one.</p>",
+  "goals": "<ul><li>Offer several everyday scenarios with the bot staying in its role</li><li>Show corrections with a short explanation in the learner's native language after every message</li><li>Adapt vocabulary and sentence length to the selected CEFR level</li><li>Support spoken input and spoken replies as an option, with words that were not clearly understood flagged for repetition</li><li>Give a list of all corrections at the end of a session</li></ul>",
+  "tags": ["Education", "Language Learning", "Conversation Practice", "Chatbot", "Speech Recognition", "Text-to-Speech", "LLM"]
+}

@@ -1,0 +1,148 @@
+{
+  "solutionId": 25,
+  "projectId": 34,
+  "title": "Background Remover with OpenCV GrabCut",
+  "description": "<p>A small Python tool that removes the background from product photos and saves transparent PNGs, or JPGs on pure white for marketplaces. It uses <strong>OpenCV GrabCut</strong> and needs no model download and no GPU.</p><ul><li>The first guess comes from the image border: pixels that look like the border color (in Lab color space) are probably background, the rest probably foreground, and a thin frame is always background.</li><li>GrabCut refines this guess with color models and a graph cut.</li><li>Clean-up: morphological opening and closing, filling of holes inside the product (light labels, reflections), optional \"keep only the largest object\", and a soft edge in the alpha channel.</li><li>Large photos are segmented on a downscaled copy for speed; the mask is scaled back to full size.</li></ul><p>Works best for products on plain, light studio backgrounds. For busy backgrounds or hair and fur, a neural model such as <code>rembg</code> is the better choice.</p>",
+  "aiTools": [
+    "OpenCV (GrabCut)",
+    "NumPy"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Install the two dependencies: pip install -r requirements.txt (OpenCV headless and NumPy).",
+    "Photograph products on a plain, evenly lit background and leave a margin around the product.",
+    "Estimate the background color from the image border and mark similar pixels as probable background, the rest as probable foreground.",
+    "Run cv2.grabCut with this mask (GC_INIT_WITH_MASK) for a few iterations on a copy downscaled to at most 1024 px.",
+    "Clean the mask with opening and closing, fill holes inside the product and, for single products, keep only the largest object.",
+    "Scale the mask back to full size and blur its edge slightly to get a soft alpha channel.",
+    "Save transparent PNGs, or composite on white and save JPGs with --white for marketplace main images.",
+    "Process a whole folder with python -m bgremove photos/ out/ and check the results; tune --tolerance for low-contrast products."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>Usually well under a second per photo on a laptop CPU at the default working size of 1024 px.</li><li>The tests require an overlap (IoU) of at least 0.9 between the mask and the true product shape on synthetic product photos.</li><li>Products whose color is very close to the background (white product on white) and fine structures such as hair need manual touch-up or a neural model.</li></ul>",
+  "userExperience": "<p>The user drops photos into a folder, runs one command and gets transparent PNGs (or white-background JPGs) with the same file names in the output folder. The command prints the foreground share per image, which makes failed cut-outs (0 % or almost 100 %) easy to spot.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "photos",
+        "type": "dataset",
+        "label": "Product Photos (folder)",
+        "color": "#64748b",
+        "position": {
+          "x": 50,
+          "y": 200
+        }
+      },
+      {
+        "id": "border",
+        "type": "preprocessing",
+        "label": "Border Color Estimate (Lab)",
+        "color": "#f59e0b",
+        "position": {
+          "x": 280,
+          "y": 200
+        }
+      },
+      {
+        "id": "mask",
+        "type": "preprocessing",
+        "label": "Initial Mask",
+        "color": "#f59e0b",
+        "position": {
+          "x": 510,
+          "y": 200
+        }
+      },
+      {
+        "id": "grabcut",
+        "type": "model",
+        "label": "OpenCV GrabCut",
+        "color": "#3b82f6",
+        "position": {
+          "x": 740,
+          "y": 200
+        }
+      },
+      {
+        "id": "cleanup",
+        "type": "preprocessing",
+        "label": "Morphology + Hole Filling",
+        "color": "#f59e0b",
+        "position": {
+          "x": 970,
+          "y": 200
+        }
+      },
+      {
+        "id": "alpha",
+        "type": "inference",
+        "label": "Soft Alpha / White Composite",
+        "color": "#10b981",
+        "position": {
+          "x": 1200,
+          "y": 200
+        }
+      },
+      {
+        "id": "out",
+        "type": "storage",
+        "label": "PNG / JPG Output",
+        "color": "#6b7280",
+        "position": {
+          "x": 1430,
+          "y": 200
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "photos",
+        "target": "border",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "border",
+        "target": "mask",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "mask",
+        "target": "grabcut",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "grabcut",
+        "target": "cleanup",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "cleanup",
+        "target": "alpha",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "alpha",
+        "target": "out",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/bgremove/remover.py",
+  "externalLinks": [
+    {
+      "title": "OpenCV: Interactive foreground extraction using GrabCut",
+      "url": "https://docs.opencv.org/4.x/d8/d83/tutorial_py_grabcut.html"
+    },
+    {
+      "title": "rembg (neural alternative)",
+      "url": "https://github.com/danielgatis/rembg"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "solutionId": null,
+  "projectId": 28,
+  "title": "Local, privacy-first voice assistant with faster-whisper, Ollama and Piper",
+  "description": "<p>A voice assistant for an older person living at home that runs entirely on a small local computer: no audio or transcript leaves the device unless an emergency message is sent to a contact the user chose.</p><ul><li><strong>Speech-to-text</strong>: faster-whisper (Whisper model <code>small</code>, int8 on CPU) with voice-activity filtering.</li><li><strong>Conversation</strong>: a local LLM (default <code>llama3.2:3b</code>) through Ollama's OpenAI-compatible API, called with the official <code>openai</code> Python SDK. A system prompt keeps answers short and forbids medical advice.</li><li><strong>Text-to-speech</strong>: Piper with a local voice, spoken a little slower than the default.</li><li><strong>Reminders</strong>: daily medication and one-off appointment reminders, created by voice through LLM tool calls, stored in a JSON file and repeated until the user says \"done\".</li><li><strong>Emergency-contact escalation</strong>: a fixed phrase check (\"I fell\", \"help me\", \"chest pain\") runs before the LLM and sends a webhook message to a family member or carer. The assistant always tells the user to call the local emergency number. It does not call emergency services and is not a replacement for them or for a medical alarm.</li></ul><p>This is not a medical device and does not monitor health.</p>",
+  "aiTools": ["faster-whisper", "Whisper", "Ollama", "Llama 3.2", "Piper TTS", "OpenAI Python SDK"],
+  "prompts": "You are a friendly voice assistant for an older person living at home.\nCurrent local time: {now}.\nRules:\n- Answer in one to three short, simple sentences. Ask at most one question at a time.\n- You can set and list reminders with the tools. Confirm the time back to the user.\n- Do not give medical advice and never suggest changing a medication or dose; suggest asking\n  the doctor or pharmacist instead.\n- You cannot call emergency services. If the user may be in danger, tell them to call {number}.",
+  "language": "Python",
+  "implementationSteps": [
+    "Install Ollama on the device and pull a small model (ollama pull llama3.2:3b); download a Piper voice with python -m piper.download_voices en_US-lessac-medium.",
+    "Transcribe each spoken turn locally with faster-whisper (model small, int8 on CPU, VAD filter on).",
+    "Check the transcript against fixed emergency phrases first; on a match, POST a message to the emergency contact's webhook and tell the user to call the local emergency number, without waiting for the LLM.",
+    "If the user confirms a reminder (\"done\", \"I took them\"), mark today's open reminders as acknowledged.",
+    "Otherwise send the conversation to the local LLM through the OpenAI-compatible API with two tools, add_reminder and list_reminders, and execute the tool calls against the reminder store.",
+    "Validate tool arguments (24-hour time, ISO date) and return errors to the model so it can ask the user again.",
+    "Run the reminder check regularly: announce due reminders and repeat unconfirmed ones after 30 minutes.",
+    "Speak every reply with Piper at a slightly slower speaking rate and play it on the device speaker."
+  ],
+  "performance": "<p><strong>Targets, not measured results.</strong></p><ul><li>Target: reply starts within about 3 seconds of the end of speech on a mini PC; measure on your device, since Whisper and the LLM both depend heavily on CPU or GPU.</li><li>Emergency phrases are matched in code, so escalation does not depend on the LLM and takes as long as the webhook call (timeout 10 s).</li><li>In a manual check with Ollama and <code>llama3.2:3b</code>, the model created a daily 20:00 reminder from \"remind me every day at 8 in the evening\" via the tool call. Small models do not always call tools correctly; test your phrasing and model.</li><li>Speech recognition quality for older voices, dialects and background noise varies; test with the actual users and microphone.</li></ul>",
+  "userExperience": "<p>The user speaks normally (\"Please remind me to take my heart tablet at 8 in the evening\") and hears a short spoken confirmation. At 20:00 the assistant says \"Time to take the heart tablet. Say 'done' when you have\" and repeats it after 30 minutes if there was no confirmation. If the user says \"I fell and can't get up\", the assistant replies \"I have sent a message to Anna. If you are hurt or in danger, call 112 now.\" A text mode (<code>--text</code>) lets carers test the setup by typing.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "mic", "type": "dataset", "label": "Microphone audio (WAV)", "color": "#10b981", "position": {"x": 0, "y": 150}},
+      {"id": "stt", "type": "model", "label": "faster-whisper STT", "color": "#3b82f6", "position": {"x": 260, "y": 150}},
+      {"id": "emergency", "type": "preprocessing", "label": "Emergency phrase check", "color": "#f59e0b", "position": {"x": 520, "y": 150}},
+      {"id": "webhook", "type": "api", "label": "Webhook to emergency contact", "color": "#06b6d4", "position": {"x": 780, "y": 0}},
+      {"id": "llm", "type": "model", "label": "Ollama LLM (OpenAI API)", "color": "#3b82f6", "position": {"x": 780, "y": 150}},
+      {"id": "reminders", "type": "storage", "label": "Reminder store (JSON)", "color": "#6b7280", "position": {"x": 780, "y": 300}},
+      {"id": "scheduler", "type": "monitoring", "label": "Reminder check and repeat", "color": "#ec4899", "position": {"x": 1040, "y": 300}},
+      {"id": "tts", "type": "model", "label": "Piper TTS", "color": "#3b82f6", "position": {"x": 1300, "y": 150}},
+      {"id": "speaker", "type": "inference", "label": "Spoken reply", "color": "#ef4444", "position": {"x": 1560, "y": 150}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "mic", "target": "stt", "type": "connection"},
+      {"id": "e2", "source": "stt", "target": "emergency", "type": "connection"},
+      {"id": "e3", "source": "emergency", "target": "webhook", "type": "connection"},
+      {"id": "e4", "source": "emergency", "target": "llm", "type": "connection"},
+      {"id": "e5", "source": "llm", "target": "reminders", "type": "connection"},
+      {"id": "e6", "source": "reminders", "target": "scheduler", "type": "connection"},
+      {"id": "e7", "source": "llm", "target": "tts", "type": "connection"},
+      {"id": "e8", "source": "webhook", "target": "tts", "type": "connection"},
+      {"id": "e9", "source": "scheduler", "target": "tts", "type": "connection"},
+      {"id": "e10", "source": "tts", "target": "speaker", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/voice_assistant/assistant.py",
+  "externalLinks": [
+    {"title": "faster-whisper", "url": "https://github.com/SYSTRAN/faster-whisper"},
+    {"title": "Ollama OpenAI compatibility", "url": "https://docs.ollama.com/api/openai-compatibility"},
+    {"title": "Piper TTS", "url": "https://github.com/OHF-Voice/piper1-gpl"},
+    {"title": "Llama 3.2 on Ollama", "url": "https://ollama.com/library/llama3.2"}
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "solutionId": 22,
+  "projectId": 31,
+  "title": "Gmail Auto-Reply Drafts with OpenAI",
+  "description": "<p>A Python script that connects to Gmail through the official Gmail API (OAuth2) and uses the OpenAI Responses API to categorize unread emails and write reply drafts.</p><ul><li>Structured output with a Pydantic schema: category, whether a reply is needed, reply text and a short reason.</li><li>Replies use only the facts in a <code>business_info.md</code> file, in the sender's language.</li><li>Drafts are saved in the original thread; you review and send them yourself.</li><li>Every handled email gets the labels <code>AI/processed</code> and <code>AI/&lt;category&gt;</code>, so it is not processed twice.</li></ul>",
+  "aiTools": ["OpenAI API", "Gmail API", "Google OAuth 2.0", "Pydantic"],
+  "prompts": "You help a small business answer its email inbox.\nCategorize the email and, if it is a business inquiry, write a reply draft.\nRules:\n- Use only facts from the business information below. Never invent prices, stock levels or dates. If the information is missing, say that you will check and get back to the sender.\n- Reply in the language of the email, in a friendly and concise tone (under 120 words), signed with the business name.\n- Do not reply to newsletters, spam, automated notifications or personal mail (needs_reply = false, reply = null).\n\nBusiness information:\n{business_info}",
+  "language": "Python",
+  "implementationSteps": [
+    "Enable the Gmail API in a Google Cloud project and create a Desktop OAuth client (credentials.json).",
+    "Install the pinned dependencies and set OPENAI_API_KEY and GMAIL_ADDRESS in .env.",
+    "Write your prices, opening hours and policies into business_info.md; it is the only source for replies.",
+    "Authorize once with the gmail.modify scope; the token is cached in token.json.",
+    "List unread inbox messages that do not yet have the AI/processed label and read the text/plain part of each.",
+    "Call responses.parse with a Pydantic Decision schema to get category, needs_reply and the reply text.",
+    "Skip newsletters, spam, automated and personal mail, and never answer your own messages.",
+    "Create the reply as a Gmail draft in the same thread (In-Reply-To, References, threadId) and add the labels.",
+    "Run with --dry-run first, review the drafts in Gmail, then schedule the script with --interval or cron."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>One model call per email; a few seconds per email including the Gmail API calls.</li><li>Default batch of 20 messages per run, adjustable with <code>--max</code>.</li><li>Replies are drafted for review before sending, so mistakes do not reach customers.</li></ul>",
+  "userExperience": "<p>You open Gmail and find labeled emails (for example AI/pricing, AI/order_status) and a reply draft in each thread that needs an answer. You edit the draft if needed and press send. Newsletters and personal mail get a label but no draft.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "gmail_inbox", "type": "api", "label": "Gmail API (unread inbox)", "color": "#06b6d4", "position": {"x": 100, "y": 150}},
+      {"id": "parse", "type": "preprocessing", "label": "Headers + Plain Text", "color": "#f59e0b", "position": {"x": 300, "y": 150}},
+      {"id": "business_info", "type": "dataset", "label": "business_info.md", "color": "#10b981", "position": {"x": 500, "y": 300}},
+      {"id": "openai", "type": "model", "label": "OpenAI Responses API (structured)", "color": "#3b82f6", "position": {"x": 500, "y": 150}},
+      {"id": "rules", "type": "preprocessing", "label": "No-Reply Rules", "color": "#f59e0b", "position": {"x": 700, "y": 150}},
+      {"id": "drafts", "type": "api", "label": "Gmail Draft in Thread", "color": "#06b6d4", "position": {"x": 900, "y": 80}},
+      {"id": "labels", "type": "storage", "label": "Gmail Labels AI/*", "color": "#6b7280", "position": {"x": 900, "y": 230}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "gmail_inbox", "target": "parse", "type": "connection"},
+      {"id": "e2", "source": "parse", "target": "openai", "type": "connection"},
+      {"id": "e3", "source": "business_info", "target": "openai", "type": "connection"},
+      {"id": "e4", "source": "openai", "target": "rules", "type": "connection"},
+      {"id": "e5", "source": "rules", "target": "drafts", "type": "connection"},
+      {"id": "e6", "source": "rules", "target": "labels", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/gmail_autoreply/autoreply.py",
+  "externalLinks": [
+    {"title": "Gmail API Python quickstart", "url": "https://developers.google.com/workspace/gmail/api/quickstart/python"},
+    {"title": "Gmail API: create drafts", "url": "https://developers.google.com/workspace/gmail/api/guides/drafts"},
+    {"title": "OpenAI structured outputs", "url": "https://developers.openai.com/api/docs/guides/structured-outputs"}
+  ]
+}

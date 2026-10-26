@@ -1,0 +1,11 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# Files on a Windows (drvfs) checkout all look executable; the git index keeps them 0644.
+extend-ignore = ["EXE002"]

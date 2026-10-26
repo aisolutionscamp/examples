@@ -1,0 +1,15 @@
+{
+  "id": 24,
+  "title": "Crop Health Monitoring with Drone Imagery",
+  "description": "<p>Farmers and agronomists cannot walk every part of a large field often enough to spot problems early. Drones with multispectral cameras can capture the whole field in one flight, and vegetation indices such as NDVI show where plants are weaker than elsewhere. The goal is a system that turns each flight into a zone map of the field, flags zones with weak or declining vegetation for a field check, and supports planning of irrigation and treatments.</p><h3>Requirements</h3><ul><li>Process multispectral orthomosaics (red and near-infrared bands) as GeoTIFF.</li><li>Divide the field into zones that match how the farm can act (for example irrigation or sprayer sections).</li><li>Compare flights over the season and detect zones whose vegetation index drops.</li><li>Export results with coordinates for GIS and farm management software.</li></ul><h3>Challenges</h3><ul><li>A low vegetation index has many possible causes (water stress, nutrients, disease, pests, thin stands); it shows where to look, not what is wrong.</li><li>Values depend on calibration, light and growth stage, so thresholds must be set per crop and season.</li><li>Large mosaics must be processed quickly after the flight.</li></ul>",
+  "goals": "<ul><li>Zone map with alerts available within one hour after the orthomosaic is ready.</li><li>Every zone whose mean NDVI dropped by more than 0.1 since the previous flight is flagged.</li><li>Flagged zones are checked in the field, and the share of alerts confirmed by scouting is tracked over the season.</li><li>Goal for the season: higher yield with less irrigation water, measured against the farm's previous seasons.</li></ul>",
+  "tags": [
+    "Agriculture",
+    "Computer Vision",
+    "Remote Sensing",
+    "NDVI",
+    "Drone Imagery",
+    "Precision Farming",
+    "GIS"
+  ]
+}

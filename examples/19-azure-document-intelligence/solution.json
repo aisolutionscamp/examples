@@ -1,0 +1,156 @@
+{
+  "solutionId": 14,
+  "projectId": 19,
+  "title": "Azure AI Document Intelligence Pipeline with Approval Routing",
+  "description": "<p>Uses <strong>Azure AI Document Intelligence</strong> (formerly Azure Form Recognizer) to read invoices, contracts and other documents, then applies business rules and routes each document to the right approvers.</p><ul><li>Prebuilt models: <code>prebuilt-invoice</code>, <code>prebuilt-contract</code> and <code>prebuilt-layout</code> for any other document (text, tables).</li><li>Fields come back typed (dates, amounts, currency, line items) with a confidence value per field.</li><li>Validation checks required fields, low confidence, subtotal + tax = total and date order, and marks each document <code>valid</code>, <code>requires_review</code> or <code>invalid</code>.</li><li>Routing sends doubtful documents to a review step first and invoices to approvers by amount; every result is written to an audit log.</li><li>An optional webhook starts an approval flow in <strong>Power Automate</strong> or <strong>Azure Logic Apps</strong>.</li></ul>",
+  "aiTools": [
+    "Azure AI Document Intelligence",
+    "azure-ai-documentintelligence (Python SDK)",
+    "Microsoft Entra ID",
+    "Power Automate",
+    "Azure Logic Apps"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Create an Azure AI Document Intelligence resource and note its endpoint.",
+    "Authenticate with an API key or Microsoft Entra ID (DefaultAzureCredential with the Cognitive Services User role).",
+    "Send a local file or a URL to begin_analyze_document with the prebuilt model for the document type and wait for the result.",
+    "Map the result to a flat record: typed field values, line items and per-field confidence.",
+    "Validate the record: required fields, confidence of at least 0.8, subtotal + tax = total, due date after invoice date.",
+    "Route the document: review step if not valid, then approvers by invoice amount or legal review for contracts.",
+    "Append the full result to an audit log with a document id.",
+    "Optionally post a summary to a Power Automate or Logic Apps HTTP trigger that runs the approval.",
+    "Measure extraction accuracy on a labelled sample of your own documents and tune the thresholds."
+  ],
+  "performance": "<p><strong>Targets, not measured results:</strong></p><ul><li>At least 95 % of header fields (vendor, invoice number, dates, totals) correct on your own labelled sample.</li><li>Documents below the confidence threshold or with inconsistent totals always go to a person, so errors are caught before booking.</li><li>Processing time depends on page count and service load, typically a few seconds per page; run the pipeline from a queue for high volumes.</li></ul>",
+  "userExperience": "<p>Finance and legal teams get each document as a structured record with a clear status: <em>valid</em>, <em>requires review</em> (with the fields that need a look) or <em>invalid</em> (with the reason). Approvers receive the request in their usual Microsoft 365 tools through Power Automate, and every decision can be traced in the audit log.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "upload",
+        "type": "api",
+        "label": "Document (file or URL)",
+        "color": "#06b6d4",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "doc_intelligence",
+        "type": "model",
+        "label": "Azure AI Document Intelligence (prebuilt models)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 320,
+          "y": 150
+        }
+      },
+      {
+        "id": "extract",
+        "type": "preprocessing",
+        "label": "Typed fields + confidence",
+        "color": "#f59e0b",
+        "position": {
+          "x": 540,
+          "y": 150
+        }
+      },
+      {
+        "id": "validate",
+        "type": "monitoring",
+        "label": "Validation rules",
+        "color": "#ec4899",
+        "position": {
+          "x": 760,
+          "y": 150
+        }
+      },
+      {
+        "id": "router",
+        "type": "preprocessing",
+        "label": "Approval routing",
+        "color": "#f59e0b",
+        "position": {
+          "x": 980,
+          "y": 150
+        }
+      },
+      {
+        "id": "audit",
+        "type": "storage",
+        "label": "Audit log (JSON lines)",
+        "color": "#6b7280",
+        "position": {
+          "x": 980,
+          "y": 300
+        }
+      },
+      {
+        "id": "power_automate",
+        "type": "api",
+        "label": "Power Automate / Logic Apps webhook",
+        "color": "#06b6d4",
+        "position": {
+          "x": 1200,
+          "y": 150
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "upload",
+        "target": "doc_intelligence",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "doc_intelligence",
+        "target": "extract",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "extract",
+        "target": "validate",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "validate",
+        "target": "router",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "router",
+        "target": "audit",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "router",
+        "target": "power_automate",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/doc_pipeline/pipeline.py",
+  "externalLinks": [
+    {
+      "title": "Azure AI Document Intelligence documentation",
+      "url": "https://learn.microsoft.com/azure/ai-services/document-intelligence/"
+    },
+    {
+      "title": "azure-ai-documentintelligence Python SDK",
+      "url": "https://learn.microsoft.com/python/api/overview/azure/ai-documentintelligence-readme"
+    },
+    {
+      "title": "Azure Logic Apps: receive HTTPS requests (Request trigger)",
+      "url": "https://learn.microsoft.com/azure/connectors/connectors-native-reqres"
+    }
+  ]
+}

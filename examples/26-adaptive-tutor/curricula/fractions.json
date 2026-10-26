@@ -1,0 +1,11 @@
+{
+  "subject": "Fractions (grade 5 to 6 level)",
+  "skills": [
+    {"id": "frac_concept", "name": "What a fraction means", "prerequisites": []},
+    {"id": "frac_equivalent", "name": "Equivalent fractions and simplifying", "prerequisites": ["frac_concept"]},
+    {"id": "frac_compare", "name": "Comparing fractions", "prerequisites": ["frac_equivalent"]},
+    {"id": "frac_add_same", "name": "Adding fractions with the same denominator", "prerequisites": ["frac_concept"]},
+    {"id": "frac_add_diff", "name": "Adding fractions with different denominators", "prerequisites": ["frac_equivalent", "frac_add_same"]},
+    {"id": "frac_multiply", "name": "Multiplying fractions", "prerequisites": ["frac_equivalent"]}
+  ]
+}

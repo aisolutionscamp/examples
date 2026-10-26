@@ -1,0 +1,7 @@
+{
+  "id": 32,
+  "title": "Website Chatbot for Small Business",
+  "description": "<p>Visitors of a small business website ask the same questions again and again: shipping costs, delivery times, returns, opening hours, prices. A simple chatbot should answer these from a knowledge base that the owner maintains, and point to a contact address when it does not know the answer.</p><h3>Constraints</h3><ul><li>Easy to set up and maintain without a developer: the knowledge base is one file.</li><li>Low or no running costs; works on a static website.</li><li>Must not invent answers: unknown questions get a fallback with contact details.</li><li>Works on mobile and desktop and fits the site's design.</li></ul>",
+  "goals": "<ul><li>The 20 most frequent customer questions are answered correctly in a test with paraphrased questions.</li><li>Unknown questions get the fallback answer instead of a wrong answer in at least 95 % of test cases.</li><li>Answer shown in under one second.</li><li>Setup on an existing website in under an hour.</li></ul>",
+  "tags": ["Small Business", "Chatbot", "Customer Support", "FAQ", "Web Integration"]
+}

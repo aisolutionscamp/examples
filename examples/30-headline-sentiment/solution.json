@@ -1,0 +1,176 @@
+{
+  "solutionId": null,
+  "projectId": 30,
+  "title": "News headline sentiment per ticker and day with FinBERT and a VADER baseline",
+  "description": "<p>Scores the tone of financial news headlines and aggregates it into one row per ticker and trading day. The output is a sentiment time series you can chart next to prices or use as one input in your own research.</p><ul><li><strong>FinBERT</strong> (<code>ProsusAI/finbert</code> on Hugging Face, via the <code>transformers</code> pipeline): a BERT model fine-tuned on financial news sentences. It returns probabilities for positive, negative and neutral; the score is P(positive) minus P(negative), from -1 to 1. Runs locally on CPU.</li><li><strong>VADER</strong> as a baseline: a rule-based lexicon with no model download, useful to compare against and as a fallback. It was built for social media and misreads finance terms.</li><li><strong>Ticker extraction</strong> from a tickers column and cashtags (<code>$AAPL</code>, <code>$BRK.B</code>).</li><li><strong>Daily aggregation</strong> in the exchange time zone (default New York). Headlines after the 16:00 close count for the next day. Syndicated copies of the same headline are counted once.</li></ul><p><strong>Not investment advice.</strong> The output describes the tone of headlines. It is not a price forecast or a trading signal, and this example makes no claim that it predicts market movements.</p>",
+  "aiTools": [
+    "FinBERT (ProsusAI/finbert)",
+    "Hugging Face Transformers",
+    "PyTorch",
+    "VADER",
+    "pandas"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Collect headlines with publication time and, where available, tickers from a news API or RSS feed you are licensed to use, and save them as CSV (published_at, headline, tickers).",
+    "Extract tickers from the tickers column and from cashtags in the headline; drop headlines without a ticker.",
+    "Score all headlines in batches with the transformers text-classification pipeline (ProsusAI/finbert, top_k=None) and compute score = P(positive) - P(negative).",
+    "Optionally score the same headlines with VADER to compare and to spot where the general-purpose lexicon disagrees with FinBERT.",
+    "Convert publication times to the exchange time zone and assign news after the 16:00 close to the next day.",
+    "Remove syndicated duplicates per ticker and day, then aggregate: headline count, mean score, share of positive and negative headlines.",
+    "Write the daily table to CSV and review a sample of scored headlines by hand before using the series in any analysis."
+  ],
+  "performance": "<p><strong>Targets and expectations, not measured results.</strong></p><ul><li>Target: label agreement with a hand-labeled sample of 200 of your own headlines of at least 80 % for FinBERT, and clearly above the VADER baseline. Measure it; financial wording differs between sources.</li><li>FinBERT is a BERT-base model (about 110 million parameters). It runs on a CPU; throughput depends on the machine and batch size, so measure it before planning a large backfill (a GPU helps there).</li><li>Days with one or two headlines give noisy averages; the headline count is in the output so you can filter them.</li><li>No claim is made about predicting prices. Any such use needs its own out-of-sample evaluation with costs, and this example does not provide one.</li></ul>",
+  "userExperience": "<p>An analyst runs <code>python -m sentiment.cli headlines.csv daily.csv</code> and gets a CSV with <code>ticker, day, headlines, mean_score, positive_share, negative_share</code>, for example <code>ACME, 2026-03-02, 3, 0.1, 0.333, 0.333</code>. Every run prints the reminder that the output is headline tone only and not investment advice. Switching to the VADER baseline is one flag (<code>--scorer vader</code>).</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "news",
+        "type": "dataset",
+        "label": "Headlines CSV (time, text, tickers)",
+        "color": "#10b981",
+        "position": {
+          "x": 0,
+          "y": 150
+        }
+      },
+      {
+        "id": "tickers",
+        "type": "preprocessing",
+        "label": "Ticker and cashtag extraction",
+        "color": "#f59e0b",
+        "position": {
+          "x": 260,
+          "y": 150
+        }
+      },
+      {
+        "id": "finbert",
+        "type": "model",
+        "label": "FinBERT (transformers pipeline)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 520,
+          "y": 60
+        }
+      },
+      {
+        "id": "vader",
+        "type": "model",
+        "label": "VADER baseline",
+        "color": "#3b82f6",
+        "position": {
+          "x": 520,
+          "y": 240
+        }
+      },
+      {
+        "id": "day",
+        "type": "preprocessing",
+        "label": "Exchange day + after-close shift",
+        "color": "#f59e0b",
+        "position": {
+          "x": 780,
+          "y": 150
+        }
+      },
+      {
+        "id": "aggregate",
+        "type": "inference",
+        "label": "Dedup + daily aggregation",
+        "color": "#ef4444",
+        "position": {
+          "x": 1040,
+          "y": 150
+        }
+      },
+      {
+        "id": "output",
+        "type": "storage",
+        "label": "Daily sentiment CSV",
+        "color": "#6b7280",
+        "position": {
+          "x": 1300,
+          "y": 150
+        }
+      },
+      {
+        "id": "review",
+        "type": "monitoring",
+        "label": "Manual sample review",
+        "color": "#ec4899",
+        "position": {
+          "x": 1560,
+          "y": 150
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "news",
+        "target": "tickers",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "tickers",
+        "target": "finbert",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "tickers",
+        "target": "vader",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "finbert",
+        "target": "day",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "vader",
+        "target": "day",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "day",
+        "target": "aggregate",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "aggregate",
+        "target": "output",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "output",
+        "target": "review",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/sentiment/scorers.py",
+  "externalLinks": [
+    {
+      "title": "ProsusAI/finbert on Hugging Face",
+      "url": "https://huggingface.co/ProsusAI/finbert"
+    },
+    {
+      "title": "Transformers pipelines",
+      "url": "https://huggingface.co/docs/transformers/main_classes/pipelines"
+    },
+    {
+      "title": "VADER sentiment",
+      "url": "https://github.com/cjhutto/vaderSentiment"
+    }
+  ]
+}

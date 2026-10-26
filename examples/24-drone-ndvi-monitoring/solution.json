@@ -1,0 +1,156 @@
+{
+  "solutionId": 20,
+  "projectId": 24,
+  "title": "NDVI Field Zones and Alerts from Drone Imagery",
+  "description": "<p>Turns a multispectral drone orthomosaic into a field health map. The script computes <strong>NDVI</strong> = (NIR - Red) / (NIR + Red) per pixel with <strong>NumPy</strong>, splits the field into square zones (for example 10 m x 10 m) and reports for each zone the mean NDVI, the share of low pixels and a status: healthy, watch, stressed or critical.</p><ul><li>Reads and writes GeoTIFF with <code>tifffile</code>, keeping the map coordinates, so zones can be exported as GeoJSON polygons and opened in QGIS or a farm management system.</li><li>Compares a flight with an earlier, co-registered flight and alerts when a zone's NDVI drops by more than a set amount.</li><li>Treats no-data pixels (outside the field, gaps in the mosaic) separately.</li></ul><p>NDVI shows where vegetation is weaker, not why. Alerts therefore say \"scout this zone\": water stress, nutrient deficiency, disease and thin stands all lower NDVI.</p>",
+  "aiTools": [
+    "NumPy",
+    "tifffile",
+    "NDVI",
+    "GeoTIFF",
+    "GeoJSON",
+    "OpenDroneMap (for the orthomosaic)"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Fly the field with a multispectral camera that has red and near-infrared bands, with overlap and reflectance calibration as the camera vendor recommends.",
+    "Stitch the images into a reflectance orthomosaic GeoTIFF with OpenDroneMap, Pix4D or Agisoft Metashape.",
+    "Run python -m cropwatch with the red and NIR band numbers of your camera; the script computes NDVI and masks no-data pixels.",
+    "Choose the zone size (for example 10 m) to match how you can act in the field, such as sprayer or irrigation sections.",
+    "Set the NDVI class thresholds for your crop and growth stage; the defaults are for a closed canopy in mid season.",
+    "For change detection, pass an earlier flight on the same grid with --previous and set the drop alert threshold.",
+    "Open out/ndvi.tif and out/zones.geojson in QGIS or import them into your farm management system.",
+    "Scout the flagged zones and record what you find, so thresholds can be adjusted over the season."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>NDVI and zone statistics are vectorized NumPy operations: a mosaic of tens of millions of pixels is processed in seconds on a laptop; the limit is memory (about 4 bytes per pixel per band).</li><li>Goal: flag zones with weak or declining vegetation within hours after a flight, so scouting and irrigation can be planned the same day.</li><li>How well alerts match real problems depends on calibration and thresholds; check them against scouting notes from your own fields.</li></ul>",
+  "userExperience": "<p>After a flight the user runs one command and gets an NDVI GeoTIFF, a GeoJSON file with one polygon per zone (status, mean NDVI, change since the last flight) and a short JSON list of alerts. In QGIS or a farm app the zones show as a color-coded grid over the field.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "drone",
+        "type": "dataset",
+        "label": "Multispectral Drone Images",
+        "color": "#64748b",
+        "position": {
+          "x": 50,
+          "y": 200
+        }
+      },
+      {
+        "id": "mosaic",
+        "type": "preprocessing",
+        "label": "Orthomosaic (OpenDroneMap)",
+        "color": "#f59e0b",
+        "position": {
+          "x": 280,
+          "y": 200
+        }
+      },
+      {
+        "id": "ndvi",
+        "type": "preprocessing",
+        "label": "NDVI + No-data Mask",
+        "color": "#f59e0b",
+        "position": {
+          "x": 510,
+          "y": 200
+        }
+      },
+      {
+        "id": "zones",
+        "type": "inference",
+        "label": "Zone Statistics & Status",
+        "color": "#10b981",
+        "position": {
+          "x": 740,
+          "y": 200
+        }
+      },
+      {
+        "id": "previous",
+        "type": "storage",
+        "label": "Previous Flight NDVI",
+        "color": "#6b7280",
+        "position": {
+          "x": 740,
+          "y": 50
+        }
+      },
+      {
+        "id": "alerts",
+        "type": "monitoring",
+        "label": "Alerts: scout / NDVI drop",
+        "color": "#ec4899",
+        "position": {
+          "x": 970,
+          "y": 120
+        }
+      },
+      {
+        "id": "geo",
+        "type": "storage",
+        "label": "NDVI GeoTIFF + Zones GeoJSON",
+        "color": "#6b7280",
+        "position": {
+          "x": 970,
+          "y": 300
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "drone",
+        "target": "mosaic",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "mosaic",
+        "target": "ndvi",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "ndvi",
+        "target": "zones",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "previous",
+        "target": "zones",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "zones",
+        "target": "alerts",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "zones",
+        "target": "geo",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/cropwatch/ndvi.py",
+  "externalLinks": [
+    {
+      "title": "NDVI (USGS)",
+      "url": "https://www.usgs.gov/landsat-missions/landsat-normalized-difference-vegetation-index"
+    },
+    {
+      "title": "OpenDroneMap documentation",
+      "url": "https://docs.opendronemap.org/"
+    },
+    {
+      "title": "tifffile",
+      "url": "https://github.com/cgohlke/tifffile"
+    }
+  ]
+}

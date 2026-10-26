@@ -1,0 +1,15 @@
+{
+  "id": 40,
+  "title": "Simple Invoice Data Extractor",
+  "description": "<p>Small businesses and freelancers collect invoices and receipts as photos, scans and PDFs, and copy amounts, dates and vendor names into a spreadsheet by hand. The goal is a simple tool that reads these documents with OCR and writes the key data into Excel.</p><ul><li>Input: images (JPG, PNG), PDFs and text files, one folder at a time.</li><li>Fields: vendor, invoice number, invoice date, due date, subtotal, tax, total, currency.</li><li>Runs locally, without a cloud account.</li><li>Shows clearly which documents need a manual check.</li></ul>",
+  "goals": "<ul><li>Invoice number, date and total found on at least 90 % of clean, typed invoices in a test set of your own documents.</li><li>A folder of 50 documents processed in a few minutes on a normal laptop.</li><li>Every row with a missing or inconsistent value (for example subtotal + tax not equal to total) is marked in the Excel file.</li></ul>",
+  "tags": [
+    "Finance & Accounting",
+    "OCR",
+    "Document Processing",
+    "Invoice Management",
+    "Text Extraction",
+    "Receipt Scanner",
+    "Data Entry"
+  ]
+}

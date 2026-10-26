@@ -1,0 +1,15 @@
+{
+  "id": 27,
+  "title": "Predictive Maintenance for Manufacturing Equipment",
+  "description": "<p>Unplanned machine failures stop production lines, and fixed maintenance intervals replace parts that still had life left. Most machines already report sensor values such as temperature, vibration, pressure and speed, but nobody watches these signals continuously.</p><p>The goal is a system that estimates, for each machine, the risk of failure in the coming days or cycles and flags unusual behaviour early enough to plan maintenance.</p><ul><li><strong>Data</strong>: sensor time series per machine plus maintenance and failure records. Real failures are rare, and many machines are serviced before they fail.</li><li><strong>Constraints</strong>: alerts must be few enough that the maintenance team acts on them; models must be evaluated on machines they were not trained on; predictions must be explainable enough for technicians to check them.</li><li><strong>Integration</strong>: results go to an existing maintenance system (CMMS) or dashboard through an API.</li></ul>",
+  "goals": "<ul><li>Flag at least 80 % of recorded failures at least 30 cycles (or an agreed lead time) in advance, measured on held-out machines.</li><li>Keep false alerts at a rate the maintenance team agrees on, e.g. at most 2 per machine and month.</li><li>Return a risk score for a machine within 1 second of receiving its latest readings.</li><li>Reduce unplanned downtime compared with the year before introduction, measured by the plant's own downtime records.</li></ul>",
+  "tags": [
+    "Manufacturing",
+    "Predictive Maintenance",
+    "Time Series Analysis",
+    "Anomaly Detection",
+    "IoT",
+    "Sensor Data",
+    "Industry 4.0"
+  ]
+}

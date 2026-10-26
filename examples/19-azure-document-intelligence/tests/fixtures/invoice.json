@@ -1,0 +1,170 @@
+{
+ "apiVersion": "2024-11-30",
+ "modelId": "prebuilt-invoice",
+ "content": "Example Corp\nINVOICE INV-1042 ...",
+ "pages": [
+  {
+   "pageNumber": 1,
+   "spans": []
+  }
+ ],
+ "documents": [
+  {
+   "docType": "invoice",
+   "confidence": 1.0,
+   "spans": [],
+   "fields": {
+    "VendorName": {
+     "type": "string",
+     "valueString": "Example Corp",
+     "content": "Example Corp",
+     "confidence": 0.95
+    },
+    "VendorAddress": {
+     "type": "address",
+     "valueAddress": {
+      "streetAddress": "1 Example Street",
+      "city": "Springfield"
+     },
+     "content": "1 Example Street, Springfield",
+     "confidence": 0.9
+    },
+    "CustomerName": {
+     "type": "string",
+     "valueString": "Sample Buyer Ltd",
+     "content": "Sample Buyer Ltd",
+     "confidence": 0.62
+    },
+    "InvoiceId": {
+     "type": "string",
+     "valueString": "INV-1042",
+     "content": "INV-1042",
+     "confidence": 0.95
+    },
+    "InvoiceDate": {
+     "type": "date",
+     "valueDate": "2026-10-01",
+     "content": "2026-10-01",
+     "confidence": 0.95
+    },
+    "DueDate": {
+     "type": "date",
+     "valueDate": "2026-10-31",
+     "content": "2026-10-31",
+     "confidence": 0.95
+    },
+    "SubTotal": {
+     "type": "currency",
+     "valueCurrency": {
+      "amount": 12000.0,
+      "currencyCode": "EUR"
+     },
+     "confidence": 0.95,
+     "content": "12000.00"
+    },
+    "TotalTax": {
+     "type": "currency",
+     "valueCurrency": {
+      "amount": 2280.0,
+      "currencyCode": "EUR"
+     },
+     "confidence": 0.95,
+     "content": "2280.00"
+    },
+    "InvoiceTotal": {
+     "type": "currency",
+     "valueCurrency": {
+      "amount": 14280.0,
+      "currencyCode": "EUR"
+     },
+     "confidence": 0.95,
+     "content": "14280.00"
+    },
+    "Items": {
+     "type": "array",
+     "valueArray": [
+      {
+       "type": "object",
+       "valueObject": {
+        "Description": {
+         "type": "string",
+         "valueString": "Consulting days",
+         "content": "Consulting days",
+         "confidence": 0.95
+        },
+        "Quantity": {
+         "type": "number",
+         "valueNumber": 10,
+         "content": "10",
+         "confidence": 0.9
+        },
+        "UnitPrice": {
+         "type": "currency",
+         "valueCurrency": {
+          "amount": 1000.0,
+          "currencyCode": "EUR"
+         },
+         "confidence": 0.95,
+         "content": "1000.00"
+        },
+        "Amount": {
+         "type": "currency",
+         "valueCurrency": {
+          "amount": 10000.0,
+          "currencyCode": "EUR"
+         },
+         "confidence": 0.95,
+         "content": "10000.00"
+        }
+       },
+       "confidence": 0.9
+      },
+      {
+       "type": "object",
+       "valueObject": {
+        "Description": {
+         "type": "string",
+         "valueString": "Travel",
+         "content": "Travel",
+         "confidence": 0.95
+        },
+        "Quantity": {
+         "type": "number",
+         "valueNumber": 1,
+         "content": "1",
+         "confidence": 0.9
+        },
+        "UnitPrice": {
+         "type": "currency",
+         "valueCurrency": {
+          "amount": 2000.0,
+          "currencyCode": "EUR"
+         },
+         "confidence": 0.95,
+         "content": "2000.00"
+        },
+        "Amount": {
+         "type": "currency",
+         "valueCurrency": {
+          "amount": 2000.0,
+          "currencyCode": "EUR"
+         },
+         "confidence": 0.95,
+         "content": "2000.00"
+        }
+       },
+       "confidence": 0.9
+      }
+     ],
+     "confidence": 0.9
+    },
+    "VendorPhone": {
+     "type": "phoneNumber",
+     "valuePhoneNumber": "+15555550100",
+     "content": "+1 555 555 0100",
+     "confidence": 0.9
+    }
+   }
+  }
+ ]
+}

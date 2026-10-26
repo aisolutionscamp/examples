@@ -1,0 +1,46 @@
+{
+  "solutionId": 28,
+  "projectId": 37,
+  "title": "Shopping List Organizer with Aisle Ordering",
+  "description": "<p>A Python tool that turns a free-text shopping note into a checklist grouped by category and sorted in the order of the aisles in a specific store.</p><ul><li><strong>Parsing:</strong> a rule-based parser reads quantities and units (\"2 kg potatoes\", \"6 eggs\"); optionally an LLM via an OpenAI-compatible API parses messy notes such as \"stuff for pancakes\".</li><li><strong>Categorization:</strong> a keyword table assigns produce, bakery, dairy, pantry and other categories; categories proposed by the LLM are validated against the same list.</li><li><strong>Aisle ordering:</strong> a small JSON file per store lists the categories in walking order.</li></ul><p>No shopping, price or store-map APIs are used.</p>",
+  "aiTools": ["Python", "OpenAI Python SDK", "OpenAI API (gpt-6-luna)", "Ollama (optional, local)", "Regular expressions"],
+  "prompts": "You turn a shopping note into a JSON object {\"items\": [{\"name\": str, \"quantity\": number, \"unit\": str or null, \"category\": str}]}. Allowed categories: produce, bakery, meat_fish, dairy, pantry, beverages, frozen, household, other. Use singular, lowercase English item names. If the note names a dish, list its usual ingredients. Do not invent prices, brands or stores. Answer with JSON only.",
+  "language": "Python",
+  "implementationSteps": [
+    "Split the note on commas, new lines and \"and\", and read quantity and unit with a regular expression",
+    "Optionally send the note to an OpenAI-compatible chat model with JSON output, and fall back to the rule parser if the answer is not valid JSON",
+    "Categorize items with a keyword table where the last matching keyword wins (\"orange juice\" is a beverage) and \"frozen\" overrides",
+    "Validate categories returned by the LLM against the allowed list",
+    "Merge duplicate items with the same unit, treating singular and plural as one item",
+    "Load the store layout JSON and sort the sections in aisle order",
+    "Print a checklist; test parser, categorizer, merging, ordering and the LLM path with a fake client"
+  ],
+  "performance": "<p><strong>Expectations, not measurements:</strong> the rule-based path runs in milliseconds and works offline. The LLM path adds one chat request per note. Categorization quality depends on the keyword table; items it does not know go to \"other\" instead of being guessed.</p>",
+  "userExperience": "<p>The user types or pastes a note and gets a checklist with one block per aisle in the order of their store, with quantities merged. Messy notes can be parsed with the optional LLM mode. Changing the store means editing a short list of categories.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "note", "type": "dataset", "label": "Shopping note (free text)", "color": "#64748b", "position": {"x": 0, "y": 100}},
+      {"id": "rules", "type": "preprocessing", "label": "Rule-based parser", "color": "#3b82f6", "position": {"x": 250, "y": 0}},
+      {"id": "llm", "type": "api", "label": "LLM parser (OpenAI-compatible, optional)", "color": "#f59e0b", "position": {"x": 250, "y": 200}},
+      {"id": "categorize", "type": "inference", "label": "Keyword categorizer", "color": "#10b981", "position": {"x": 500, "y": 100}},
+      {"id": "merge", "type": "preprocessing", "label": "Merge duplicates", "color": "#3b82f6", "position": {"x": 700, "y": 100}},
+      {"id": "layout", "type": "storage", "label": "Store layout JSON", "color": "#8b5cf6", "position": {"x": 700, "y": 250}},
+      {"id": "list", "type": "inference", "label": "Checklist in aisle order", "color": "#10b981", "position": {"x": 900, "y": 100}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "note", "target": "rules", "type": "connection"},
+      {"id": "e2", "source": "note", "target": "llm", "type": "connection"},
+      {"id": "e3", "source": "rules", "target": "categorize", "type": "connection"},
+      {"id": "e4", "source": "llm", "target": "categorize", "type": "connection"},
+      {"id": "e5", "source": "categorize", "target": "merge", "type": "connection"},
+      {"id": "e6", "source": "merge", "target": "list", "type": "connection"},
+      {"id": "e7", "source": "layout", "target": "list", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/shopping_list/llm_parser.py",
+  "externalLinks": [
+    {"title": "OpenAI API: JSON mode", "url": "https://developers.openai.com/api/docs/guides/structured-outputs"},
+    {"title": "Ollama OpenAI compatibility", "url": "https://docs.ollama.com/api/openai-compatibility"}
+  ]
+}

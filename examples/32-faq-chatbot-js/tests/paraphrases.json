@@ -1,0 +1,16 @@
+[
+  ["what does delivery cost", "shipping-cost"],
+  ["is postage free over 40 euros", "shipping-cost"],
+  ["how many days until my coffee arrives", "shipping-time"],
+  ["has my package shipped yet, tracking number?", "order-tracking"],
+  ["I want my money back", "returns"],
+  ["can I send something back", "returns"],
+  ["are you open on saturday", "opening-hours"],
+  ["what time does the cafe close", "opening-hours"],
+  ["price of 1kg beans", "coffee-price"],
+  ["can you grind it for my espresso machine", "grind"],
+  ["do you take credit cards", "payment"],
+  ["how do I pause my monthly plan", "subscription"],
+  ["is there gluten in the pastries", "allergens"],
+  ["bulk order for our office", "wholesale"]
+]

@@ -1,0 +1,49 @@
+{
+  "solutionId": 29,
+  "projectId": 38,
+  "title": "YouTube Summarizer with Transcript Chunking and Whisper Fallback",
+  "description": "<p>A Python command line tool that summarizes a YouTube video from its transcript and returns a short summary, key points and chapter timestamps.</p><ul><li><strong>Transcript:</strong> captions via <code>youtube-transcript-api</code>; if a video has none, the audio is downloaded with yt-dlp and transcribed locally with faster-whisper.</li><li><strong>Chunking:</strong> each transcript line keeps its <code>[mm:ss]</code> timestamp, so the model can cite where a point is made.</li><li><strong>Summarization:</strong> map-reduce over chunks with the OpenAI Python SDK, either against OpenAI or a local model through Ollama's OpenAI-compatible API.</li></ul>",
+  "aiTools": ["Python", "youtube-transcript-api", "faster-whisper", "yt-dlp", "OpenAI Python SDK", "OpenAI API (gpt-6-luna)", "Ollama (optional, local)"],
+  "prompts": "Below are timestamped notes from a video titled \"{title}\". Write in {language}:\n1. A summary of at most {words} words.\n2. 5 to 7 key points as bullet points.\n3. A list of chapters as \"mm:ss - topic\", using only timestamps that appear in the notes.\nDo not add facts that are not in the notes.",
+  "language": "Python",
+  "implementationSteps": [
+    "Extract the 11-character video id from watch, youtu.be, shorts, embed and live URLs",
+    "Fetch captions in the preferred languages with youtube-transcript-api",
+    "If there are no captions and the Whisper fallback is enabled, download the audio with yt-dlp and transcribe it with faster-whisper (CPU, int8, VAD filter)",
+    "Prefix every transcript line with its [mm:ss] timestamp and group lines into chunks of about 12,000 characters",
+    "Summarize each chunk into timestamped notes with a chat model (skipped when the video fits into one chunk)",
+    "Merge the notes into a final summary, key points and chapter list, with the output language configurable",
+    "Configure the model and endpoint via OPENAI_MODEL and OPENAI_BASE_URL to switch between OpenAI and Ollama",
+    "Test offline with fake caption API, fake Whisper model and fake chat client"
+  ],
+  "performance": "<p><strong>Expectations, not measurements:</strong></p><ul><li>A video with captions needs one caption request plus one chat request per 12,000 characters of transcript (about 15 to 20 minutes of speech) and one final request.</li><li>The Whisper fallback runs locally; on CPU with the <code>small</code> model expect roughly real time or slower.</li><li>Summary quality depends on the model and on caption quality; there is no accuracy figure.</li></ul>",
+  "userExperience": "<p>The user passes a video URL and gets a plain-text summary, bullet-point key points and a chapter list such as <code>04:12 - Pricing</code>, so they can jump to the parts they need. Caption languages and the summary language can be chosen. The tool says whether the transcript came from captions or from Whisper.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "url", "type": "dataset", "label": "YouTube URL", "color": "#64748b", "position": {"x": 0, "y": 100}},
+      {"id": "captions", "type": "api", "label": "Captions (youtube-transcript-api)", "color": "#f59e0b", "position": {"x": 250, "y": 0}},
+      {"id": "audio", "type": "preprocessing", "label": "Audio download (yt-dlp)", "color": "#3b82f6", "position": {"x": 250, "y": 200}},
+      {"id": "whisper", "type": "model", "label": "faster-whisper STT", "color": "#8b5cf6", "position": {"x": 450, "y": 200}},
+      {"id": "chunks", "type": "preprocessing", "label": "Timestamped chunks", "color": "#3b82f6", "position": {"x": 600, "y": 100}},
+      {"id": "map", "type": "inference", "label": "Per-chunk notes (LLM)", "color": "#10b981", "position": {"x": 800, "y": 100}},
+      {"id": "reduce", "type": "inference", "label": "Final summary + chapters (LLM)", "color": "#10b981", "position": {"x": 1000, "y": 100}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "url", "target": "captions", "type": "connection"},
+      {"id": "e2", "source": "url", "target": "audio", "type": "connection"},
+      {"id": "e3", "source": "audio", "target": "whisper", "type": "connection"},
+      {"id": "e4", "source": "captions", "target": "chunks", "type": "connection"},
+      {"id": "e5", "source": "whisper", "target": "chunks", "type": "connection"},
+      {"id": "e6", "source": "chunks", "target": "map", "type": "connection"},
+      {"id": "e7", "source": "map", "target": "reduce", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/yt_summarizer/summarizer.py",
+  "externalLinks": [
+    {"title": "youtube-transcript-api", "url": "https://github.com/jdepoix/youtube-transcript-api"},
+    {"title": "faster-whisper", "url": "https://github.com/SYSTRAN/faster-whisper"},
+    {"title": "OpenAI Python SDK", "url": "https://github.com/openai/openai-python"},
+    {"title": "Ollama OpenAI compatibility", "url": "https://docs.ollama.com/api/openai-compatibility"}
+  ]
+}

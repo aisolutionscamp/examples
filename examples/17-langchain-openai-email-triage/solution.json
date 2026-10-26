@@ -1,0 +1,51 @@
+{
+  "solutionId": 9,
+  "projectId": 17,
+  "title": "LangChain + OpenAI Classification Pipeline",
+  "description": "<p>A Python pipeline that triages support emails with LangChain and the OpenAI API. It cleans the email, extracts order numbers, account IDs and error codes with regular expressions, and asks the model for a structured classification (urgency, department, intent, language, confidence).</p><ul><li>Uses <code>with_structured_output</code> with a Pydantic schema, so the result is always valid JSON with allowed values only.</li><li>Clear, routine cases get a reply draft that is grounded in your policy texts, found by a vector search.</li><li>Low-confidence, high-urgency, outage and refund emails are flagged for a human and get no draft.</li><li>Builds a Zendesk ticket payload with priority, tags and the draft as an internal note.</li></ul>",
+  "aiTools": ["LangChain", "OpenAI API", "OpenAI Embeddings", "Pydantic", "Zendesk API"],
+  "prompts": "System: You triage customer support emails.\nURGENCY: HIGH = service outage, security issue, failed payment; MEDIUM = account access, billing dispute, bug; LOW = feature request, general question.\nDEPARTMENT: TECHNICAL = bugs, integrations, API errors; BILLING = payments, invoices, refunds, pricing; SALES = upgrades, new features, enterprise; GENERAL = everything else.\nBe honest with the confidence value: use < 0.6 when the email is ambiguous.\n\nReply draft system prompt: You write reply drafts for support agents. Answer in the customer's language. Use only facts from the policy excerpts. If they do not answer the question, say an agent will follow up. Do not promise refunds or dates that the policies do not state. Keep it under 150 words.",
+  "language": "Python",
+  "implementationSteps": [
+    "Install the pinned dependencies and set OPENAI_API_KEY (and optionally OPENAI_MODEL) in .env.",
+    "Parse the email with Python's email package, drop quoted replies and the signature, and extract order numbers, account IDs and error codes with regular expressions.",
+    "Define the Classification Pydantic model (urgency, department, intent, language, confidence, reasoning) and bind it with ChatOpenAI.with_structured_output.",
+    "Write the classification prompt with explicit rules for each urgency level and department.",
+    "Apply escalation rules: confidence below MIN_CONFIDENCE, HIGH urgency, or outage/refund intents go to a human without a draft.",
+    "Index your policy texts in a vector store with OpenAI embeddings and retrieve the top matches for routine emails.",
+    "Generate a reply draft in the customer's language that uses only the retrieved policy excerpts.",
+    "Map the result to a Zendesk ticket payload with priority, tags and the draft as an internal note.",
+    "Run the offline tests, then label a sample of your own emails to measure classification quality before routing automatically."
+  ],
+  "performance": "<p><strong>Targets, not measured results:</strong></p><ul><li>Two model calls per routine email (classification plus draft), one for escalated emails.</li><li>Classification accuracy of 85 % or more on a labeled sample of your own emails before you enable automatic routing.</li><li>Draft ready within seconds of the email arriving, so standard emails can be answered in minutes instead of hours.</li></ul><p>The model's confidence value is a self-assessment and needs calibration against agent corrections.</p>",
+  "userExperience": "<p>Agents see a ticket that already has priority, department and intent tags, the extracted order and account numbers, and a reply draft as an internal note. They edit and send it, or pick up the escalated emails that have no draft. Customers get no automatic replies; every answer is checked by a person.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "email_input", "type": "api", "label": "Email (.eml / text)", "color": "#06b6d4", "position": {"x": 100, "y": 100}},
+      {"id": "preprocessor", "type": "preprocessing", "label": "Cleanup + ID Extraction", "color": "#f59e0b", "position": {"x": 300, "y": 100}},
+      {"id": "classifier", "type": "model", "label": "OpenAI Structured Classifier", "color": "#3b82f6", "position": {"x": 500, "y": 100}},
+      {"id": "confidence_check", "type": "monitoring", "label": "Escalation Rules", "color": "#ec4899", "position": {"x": 500, "y": 250}},
+      {"id": "knowledge_base", "type": "storage", "label": "Policy Vector Store", "color": "#6b7280", "position": {"x": 700, "y": 250}},
+      {"id": "response_gen", "type": "model", "label": "Reply Draft Generator", "color": "#3b82f6", "position": {"x": 700, "y": 100}},
+      {"id": "human_escalation", "type": "monitoring", "label": "Human Agent", "color": "#ec4899", "position": {"x": 500, "y": 400}},
+      {"id": "zendesk", "type": "api", "label": "Zendesk Ticket Payload", "color": "#06b6d4", "position": {"x": 900, "y": 100}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "email_input", "target": "preprocessor", "type": "connection"},
+      {"id": "e2", "source": "preprocessor", "target": "classifier", "type": "connection"},
+      {"id": "e3", "source": "classifier", "target": "confidence_check", "type": "connection"},
+      {"id": "e4", "source": "confidence_check", "target": "response_gen", "type": "connection"},
+      {"id": "e5", "source": "knowledge_base", "target": "response_gen", "type": "connection"},
+      {"id": "e6", "source": "confidence_check", "target": "human_escalation", "type": "connection"},
+      {"id": "e7", "source": "response_gen", "target": "zendesk", "type": "connection"},
+      {"id": "e8", "source": "human_escalation", "target": "zendesk", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/email_triage/pipeline.py",
+  "externalLinks": [
+    {"title": "LangChain: structured output", "url": "https://docs.langchain.com/oss/python/langchain/structured-output"},
+    {"title": "OpenAI API models", "url": "https://developers.openai.com/api/docs/models"},
+    {"title": "Zendesk Tickets API", "url": "https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/"}
+  ]
+}

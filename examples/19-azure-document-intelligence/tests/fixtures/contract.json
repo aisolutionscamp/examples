@@ -1,0 +1,59 @@
+{
+ "apiVersion": "2024-11-30",
+ "modelId": "prebuilt-contract",
+ "content": "SERVICE AGREEMENT ...",
+ "documents": [
+  {
+   "docType": "contract",
+   "confidence": 1.0,
+   "spans": [],
+   "fields": {
+    "Title": {
+     "type": "string",
+     "valueString": "Service Agreement",
+     "content": "Service Agreement",
+     "confidence": 0.95
+    },
+    "Parties": {
+     "type": "array",
+     "valueArray": [
+      {
+       "type": "object",
+       "valueObject": {
+        "Name": {
+         "type": "string",
+         "valueString": "Example Corp",
+         "content": "Example Corp",
+         "confidence": 0.95
+        }
+       }
+      },
+      {
+       "type": "object",
+       "valueObject": {
+        "Name": {
+         "type": "string",
+         "valueString": "Sample Supplier GmbH",
+         "content": "Sample Supplier GmbH",
+         "confidence": 0.95
+        }
+       }
+      }
+     ]
+    },
+    "EffectiveDate": {
+     "type": "date",
+     "valueDate": "2026-11-01",
+     "content": "2026-11-01",
+     "confidence": 0.95
+    },
+    "ExpirationDate": {
+     "type": "date",
+     "valueDate": "2027-10-31",
+     "content": "2027-10-31",
+     "confidence": 0.95
+    }
+   }
+  }
+ ]
+}

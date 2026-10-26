@@ -1,0 +1,162 @@
+{
+  "solutionId": 31,
+  "projectId": 40,
+  "title": "Invoice Data Extractor with Tesseract OCR and Excel Export",
+  "description": "<p>A small command-line tool that reads a folder of invoices and receipts and writes one Excel sheet.</p><ul><li>Images go through <strong>Tesseract OCR</strong> after a simple cleanup (grayscale, upscaling, contrast); PDFs with a text layer are read directly with <strong>pypdf</strong>.</li><li>Regular expressions find vendor, invoice number, invoice and due date, subtotal, tax, total and currency, in US and European number and date formats.</li><li>Plausibility checks flag missing fields, totals that do not add up and due dates before the invoice date.</li><li>The Excel file (<strong>openpyxl</strong>) has formatted dates and amounts, a filter, and highlights every row that needs a human check. CSV export is also available.</li></ul>",
+  "aiTools": [
+    "Tesseract OCR",
+    "pytesseract",
+    "Pillow",
+    "pypdf",
+    "openpyxl"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Install Tesseract and the four pinned Python packages.",
+    "Collect the files of a folder: images (PNG, JPG, TIFF, BMP), PDFs and text files.",
+    "Read PDF text layers with pypdf; report PDFs without text instead of guessing.",
+    "Prepare images (grayscale, 2x upscale for small scans, autocontrast) and run Tesseract with --psm 6.",
+    "Apply regular expressions for invoice number, dates and labelled amounts; take the vendor from the first line.",
+    "Normalize dates (day-first by default, --us-dates for month-first) and amounts (1,234.56 and 1.234,56).",
+    "Check the result: required fields present, subtotal + tax = total, due date not before invoice date.",
+    "Write all rows to Excel with formats and highlight rows with problems; optionally write CSV.",
+    "Test the patterns on a sample of your own invoices and extend them where fields are missed."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>Clean, labelled invoices in English: number, date and total found in most cases; check on 20 to 50 of your own invoices.</li><li>Text files and text PDFs: milliseconds per file. Images: a few seconds per page for Tesseract, depending on size.</li><li>Every row with a missing or inconsistent field is marked, so errors are visible instead of silent.</li></ul>",
+  "userExperience": "<p>Run one command on a folder and open the Excel file: one row per document, dates and amounts already formatted, a filter on every column, and yellow rows with a short reason (for example \"total not found\") wherever someone should look at the original. The console prints a one-line summary per file.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "input_folder",
+        "type": "dataset",
+        "label": "Invoices: images, PDFs, text",
+        "color": "#10b981",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "pdf_text",
+        "type": "preprocessing",
+        "label": "PDF text layer (pypdf)",
+        "color": "#f59e0b",
+        "position": {
+          "x": 320,
+          "y": 60
+        }
+      },
+      {
+        "id": "image_prep",
+        "type": "preprocessing",
+        "label": "Image cleanup (Pillow)",
+        "color": "#f59e0b",
+        "position": {
+          "x": 320,
+          "y": 240
+        }
+      },
+      {
+        "id": "tesseract",
+        "type": "model",
+        "label": "Tesseract OCR",
+        "color": "#3b82f6",
+        "position": {
+          "x": 540,
+          "y": 240
+        }
+      },
+      {
+        "id": "regex_parser",
+        "type": "inference",
+        "label": "Regex field parser",
+        "color": "#ef4444",
+        "position": {
+          "x": 760,
+          "y": 150
+        }
+      },
+      {
+        "id": "checks",
+        "type": "monitoring",
+        "label": "Plausibility checks",
+        "color": "#ec4899",
+        "position": {
+          "x": 980,
+          "y": 150
+        }
+      },
+      {
+        "id": "excel",
+        "type": "storage",
+        "label": "Excel / CSV export",
+        "color": "#6b7280",
+        "position": {
+          "x": 1200,
+          "y": 150
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "input_folder",
+        "target": "pdf_text",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "input_folder",
+        "target": "image_prep",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "image_prep",
+        "target": "tesseract",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "pdf_text",
+        "target": "regex_parser",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "tesseract",
+        "target": "regex_parser",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "regex_parser",
+        "target": "checks",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "checks",
+        "target": "excel",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/invoice_extractor/parse.py",
+  "externalLinks": [
+    {
+      "title": "Tesseract OCR documentation",
+      "url": "https://tesseract-ocr.github.io/"
+    },
+    {
+      "title": "pytesseract",
+      "url": "https://github.com/madmaze/pytesseract"
+    },
+    {
+      "title": "openpyxl documentation",
+      "url": "https://openpyxl.readthedocs.io/"
+    }
+  ]
+}

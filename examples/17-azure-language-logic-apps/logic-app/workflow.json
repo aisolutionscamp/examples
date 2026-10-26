@@ -1,0 +1,120 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$connections": { "type": "Object", "defaultValue": {} },
+      "triageFunctionUrl": { "type": "String", "defaultValue": "https://<your-function-app>.azurewebsites.net/api/triage" },
+      "triageFunctionKey": { "type": "SecureString" },
+      "agentMailbox": { "type": "String", "defaultValue": "support-agents@example.com" },
+      "escalationMailbox": { "type": "String", "defaultValue": "support-escalation@example.com" }
+    },
+    "triggers": {
+      "When_a_new_email_arrives_(V3)": {
+        "type": "ApiConnection",
+        "inputs": {
+          "host": { "connection": { "name": "@parameters('$connections')['office365']['connectionId']" } },
+          "method": "get",
+          "path": "/v3/Mail/OnNewEmail",
+          "queries": {
+            "folderPath": "Inbox",
+            "importance": "Any",
+            "fetchOnlyWithAttachment": false,
+            "includeAttachments": false
+          }
+        },
+        "recurrence": { "frequency": "Minute", "interval": 3 },
+        "splitOn": "@triggerBody()?['value']"
+      }
+    },
+    "actions": {
+      "Triage_email": {
+        "type": "Http",
+        "inputs": {
+          "method": "POST",
+          "uri": "@parameters('triageFunctionUrl')",
+          "headers": {
+            "Content-Type": "application/json",
+            "x-functions-key": "@parameters('triageFunctionKey')"
+          },
+          "body": {
+            "subject": "@triggerBody()?['subject']",
+            "body": "@triggerBody()?['body']",
+            "from": "@triggerBody()?['from']"
+          }
+        },
+        "runAfter": {}
+      },
+      "Parse_triage_result": {
+        "type": "ParseJson",
+        "inputs": {
+          "content": "@body('Triage_email')",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "language": { "type": "string" },
+              "sentiment": { "type": "string" },
+              "category": { "type": "string" },
+              "urgency": { "type": "string" },
+              "escalate": { "type": "boolean" },
+              "escalation_reason": { "type": ["string", "null"] },
+              "draft": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "runAfter": { "Triage_email": ["Succeeded"] }
+      },
+      "Needs_human": {
+        "type": "If",
+        "expression": { "and": [{ "equals": ["@body('Parse_triage_result')?['escalate']", true] }] },
+        "actions": {
+          "Notify_escalation_team": {
+            "type": "ApiConnection",
+            "inputs": {
+              "host": { "connection": { "name": "@parameters('$connections')['office365']['connectionId']" } },
+              "method": "post",
+              "path": "/v2/Mail",
+              "body": {
+                "To": "@parameters('escalationMailbox')",
+                "Subject": "[ESCALATE @{body('Parse_triage_result')?['urgency']}] @{triggerBody()?['subject']}",
+                "Body": "<p>Reason: @{body('Parse_triage_result')?['escalation_reason']}</p><p>From: @{triggerBody()?['from']}</p><p>@{triggerBody()?['bodyPreview']}</p>",
+                "Importance": "High"
+              }
+            }
+          }
+        },
+        "else": {
+          "actions": {
+            "Send_draft_to_agents": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": { "connection": { "name": "@parameters('$connections')['office365']['connectionId']" } },
+                "method": "post",
+                "path": "/v2/Mail",
+                "body": {
+                  "To": "@parameters('agentMailbox')",
+                  "Subject": "[@{body('Parse_triage_result')?['category']} / @{body('Parse_triage_result')?['urgency']}] @{triggerBody()?['subject']}",
+                  "Body": "<p>Customer: @{triggerBody()?['from']}</p><p>Sentiment: @{body('Parse_triage_result')?['sentiment']}</p><p><strong>Draft (review before sending):</strong></p><p>@{body('Parse_triage_result')?['draft']}</p>",
+                  "Importance": "Normal"
+                }
+              }
+            }
+          }
+        },
+        "runAfter": { "Parse_triage_result": ["Succeeded"] }
+      }
+    },
+    "outputs": {}
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "office365": {
+          "connectionId": "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Web/connections/office365",
+          "connectionName": "office365",
+          "id": "/subscriptions/<subscription-id>/providers/Microsoft.Web/locations/<region>/managedApis/office365"
+        }
+      }
+    }
+  }
+}

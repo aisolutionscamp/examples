@@ -1,0 +1,47 @@
+{
+  "solutionId": 27,
+  "projectId": 36,
+  "title": "Password Checker and Generator following NIST SP 800-63B",
+  "description": "<p>A small Python tool that generates passwords and passphrases with the <code>secrets</code> module and checks existing passwords the way NIST SP 800-63B (revision 4) asks password verifiers to.</p><ul><li><strong>Length over composition:</strong> at least 15 characters (8 if the password is one factor of MFA), spaces and Unicode allowed, no character-class rules.</li><li><strong>Breach check:</strong> lookup in Have I Been Pwned's Pwned Passwords corpus through the k-anonymity range API. Only the first 5 characters of the SHA-1 hash are sent.</li><li><strong>Strength estimate:</strong> zxcvbn detects dictionary words, keyboard walks, dates, repeats and l33t substitutions and explains why a password is weak.</li></ul><p>No machine-learning model is needed: the checks are deterministic and explainable.</p>",
+  "aiTools": ["Python", "zxcvbn", "Have I Been Pwned Pwned Passwords API", "httpx", "secrets (Python standard library)", "EFF large wordlist"],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Normalize the password to Unicode NFC and count its length in code points",
+    "Require at least 15 characters (8 when used with MFA) and accept up to 128, without composition rules",
+    "Hash with SHA-1, send only the first 5 hex characters to api.pwnedpasswords.com/range/ with padding enabled, and compare the suffixes locally",
+    "Run zxcvbn with account-specific words (name, email) and reject scores below 3 of 4",
+    "Return a verdict with the concrete problems and zxcvbn's suggestions",
+    "Generate passphrases from the 7,776-word EFF list and random passwords with secrets.choice, and report their entropy",
+    "Test offline: mock the range API with httpx.MockTransport and check every rule with fixed passwords"
+  ],
+  "performance": "<p><strong>Expectations, not measurements:</strong></p><ul><li>One check takes one HTTPS request to the range API plus milliseconds of local work; zxcvbn analyzes at most the first 100 characters to stay fast.</li><li>A 6-word passphrase from the EFF list has about 77.5 bits of entropy; a 20-character password from the 72-character default alphabet about 123 bits.</li><li>zxcvbn's score is an estimate based on mostly English dictionaries, not a guarantee.</li></ul>",
+  "userExperience": "<p>The user enters a password at a hidden prompt and gets a clear verdict: accepted or not, length, zxcvbn strength (0 to 4), how often it was found in breaches, and specific suggestions such as \"Add another word or two\". The generator prints a passphrase and its entropy. The same functions can sit behind a sign-up form for a live strength meter.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "input", "type": "preprocessing", "label": "NFC normalize + length check", "color": "#3b82f6", "position": {"x": 0, "y": 100}},
+      {"id": "sha1", "type": "preprocessing", "label": "SHA-1, 5-char prefix", "color": "#3b82f6", "position": {"x": 250, "y": 0}},
+      {"id": "hibp", "type": "api", "label": "Pwned Passwords range API", "color": "#f59e0b", "position": {"x": 500, "y": 0}},
+      {"id": "zxcvbn", "type": "model", "label": "zxcvbn pattern estimator", "color": "#8b5cf6", "position": {"x": 250, "y": 200}},
+      {"id": "verdict", "type": "inference", "label": "Verdict + suggestions", "color": "#10b981", "position": {"x": 750, "y": 100}},
+      {"id": "wordlist", "type": "dataset", "label": "EFF large wordlist", "color": "#64748b", "position": {"x": 0, "y": 350}},
+      {"id": "generator", "type": "inference", "label": "secrets-based generator", "color": "#10b981", "position": {"x": 250, "y": 350}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "input", "target": "sha1", "type": "connection"},
+      {"id": "e2", "source": "sha1", "target": "hibp", "type": "connection"},
+      {"id": "e3", "source": "hibp", "target": "verdict", "type": "connection"},
+      {"id": "e4", "source": "input", "target": "zxcvbn", "type": "connection"},
+      {"id": "e5", "source": "zxcvbn", "target": "verdict", "type": "connection"},
+      {"id": "e6", "source": "wordlist", "target": "generator", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/password_tool/checker.py",
+  "externalLinks": [
+    {"title": "NIST SP 800-63B, section 3.1.1.2 Password Verifiers", "url": "https://pages.nist.gov/800-63-4/sp800-63b.html"},
+    {"title": "Have I Been Pwned: Pwned Passwords API", "url": "https://haveibeenpwned.com/API/v3#PwnedPasswords"},
+    {"title": "zxcvbn (Python port)", "url": "https://github.com/dwolfhub/zxcvbn-python"},
+    {"title": "EFF dice-generated passphrases", "url": "https://www.eff.org/dice"}
+  ]
+}

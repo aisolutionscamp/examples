@@ -1,0 +1,14 @@
+{
+  "id": 35,
+  "title": "Restaurant Review Sentiment Analyzer",
+  "description": "<p>Restaurants collect reviews on several platforms, and owners rarely have time to read all of them. Star ratings alone do not say what guests liked or disliked. The goal is a simple tool that analyzes review texts, labels them as positive, negative or neutral, and shows which topics (food, service, ambience, price, waiting time, cleanliness) are praised or criticized, so the team knows what to improve first.</p><h3>Requirements</h3><ul><li>Read reviews exported as a CSV file.</li><li>Label each review as positive, negative or neutral with a score.</li><li>Score topics separately, since one review often praises the food and criticizes the noise.</li><li>Produce a short report and a per-review table that opens in a spreadsheet.</li><li>Run locally without API keys or costs.</li></ul><h3>Challenges</h3><ul><li>Mixed reviews, sarcasm and restaurant-specific words (\"bland\", \"overpriced\").</li><li>Reviews in several languages.</li></ul>",
+  "goals": "<ul><li>Labels agree with star ratings (4-5 stars positive, 1-2 stars negative) for at least 80 % of a sample of your own reviews.</li><li>Every review is assigned to the topics it mentions, with a separate score per topic.</li><li>A monthly report lists the share of negative mentions per topic and the most negative reviews.</li></ul>",
+  "tags": [
+    "Hospitality",
+    "Sentiment Analysis",
+    "NLP",
+    "Customer Reviews",
+    "Restaurant",
+    "Python"
+  ]
+}

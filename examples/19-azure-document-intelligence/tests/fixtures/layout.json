@@ -1,0 +1,22 @@
+{
+ "apiVersion": "2024-11-30",
+ "modelId": "prebuilt-layout",
+ "content": "Quarterly report\n...",
+ "pages": [
+  {
+   "pageNumber": 1,
+   "spans": []
+  },
+  {
+   "pageNumber": 2,
+   "spans": []
+  }
+ ],
+ "tables": [
+  {
+   "rowCount": 3,
+   "columnCount": 2,
+   "cells": []
+  }
+ ]
+}

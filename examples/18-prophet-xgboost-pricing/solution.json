@@ -1,0 +1,229 @@
+{
+  "solutionId": 12,
+  "projectId": 18,
+  "title": "Prophet + XGBoost Ensemble with Price Recommendation",
+  "description": "<p>Forecasts daily demand per product and store with a blend of <strong>Prophet</strong> and <strong>XGBoost</strong>, then recommends a price for the forecast horizon.</p><ul><li><strong>Prophet</strong> models trend, weekly and yearly seasonality plus temperature, holidays and the price ratio to the competitor.</li><li><strong>XGBoost</strong> learns non-linear effects of calendar, weather and price features.</li><li>The blend weight comes from each model's error on a 28-day hold-out window.</li><li>A price search picks the most profitable price inside a corridor (minimum margin, maximum gap to the competitor, maximum change per update), caps sales at stock on hand and explains the decision in one line.</li><li>Optional adapters cache forecasts in <strong>Redis</strong> and read sales events from <strong>Apache Kafka</strong>.</li></ul><p>The example trains on synthetic sales data, so it runs anywhere without accounts.</p>",
+  "aiTools": [
+    "Prophet",
+    "XGBoost",
+    "scikit-learn",
+    "pandas",
+    "Redis",
+    "Apache Kafka"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Export daily sales per SKU and store with price, competitor price, temperature and holiday flag (the example generates this data in data.py).",
+    "Add calendar and price features (day of week, day of year, weekend, our price / competitor price).",
+    "Train Prophet with weekly and yearly seasonality and the external regressors, and XGBoost on the feature table.",
+    "Hold out the last 28 days, measure MAPE of both models and set the blend weight by inverse error; retrain both on all history.",
+    "Forecast the next days from planned prices and the weather forecast; take the prediction interval from Prophet.",
+    "Estimate price elasticity with a log-log regression on history.",
+    "Search a price grid inside the business-rule corridor, cap expected sales at stock on hand and pick the price with the highest expected profit.",
+    "Optionally cache forecasts in Redis (4-hour TTL) and trigger re-forecasts from Kafka sales events.",
+    "Backtest on your own data with several cut-off dates before using the prices in stores."
+  ],
+  "performance": "<p><strong>Targets (not measured in production):</strong></p><ul><li>7-day MAPE below 20 % per SKU/store on a rolling backtest.</li><li>Forecasts and price decisions refreshed every 4 hours.</li><li>Training one SKU/store on two years of daily data takes a few seconds on one CPU core, so 10,000+ SKUs need parallel jobs.</li></ul><p>On the synthetic data in the example, the ensemble beats a naive 28-day-mean forecast in the tests; real sales data is noisier.</p>",
+  "userExperience": "<p>Store managers see, per product, the demand forecast with an 80 % interval, the recommended price, the allowed price range and a one-line reason such as \"Raise price: forecast demand (365) exceeds stock (250)\". Pricing rules (margin, competitor gap, maximum change) are parameters, so the business can change them without retraining.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "sales_history",
+        "type": "dataset",
+        "label": "Sales history",
+        "color": "#10b981",
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "external_inputs",
+        "type": "api",
+        "label": "Weather, holidays, competitor prices",
+        "color": "#06b6d4",
+        "position": {
+          "x": 100,
+          "y": 220
+        }
+      },
+      {
+        "id": "kafka_events",
+        "type": "api",
+        "label": "Kafka sales events (optional)",
+        "color": "#06b6d4",
+        "position": {
+          "x": 100,
+          "y": 340
+        }
+      },
+      {
+        "id": "feature_eng",
+        "type": "preprocessing",
+        "label": "Calendar + price features",
+        "color": "#f59e0b",
+        "position": {
+          "x": 320,
+          "y": 160
+        }
+      },
+      {
+        "id": "prophet_model",
+        "type": "model",
+        "label": "Prophet (trend, seasonality)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 540,
+          "y": 100
+        }
+      },
+      {
+        "id": "xgboost_model",
+        "type": "model",
+        "label": "XGBoost (feature effects)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 540,
+          "y": 220
+        }
+      },
+      {
+        "id": "ensemble",
+        "type": "inference",
+        "label": "Weighted blend (hold-out MAPE)",
+        "color": "#ef4444",
+        "position": {
+          "x": 760,
+          "y": 160
+        }
+      },
+      {
+        "id": "elasticity",
+        "type": "training",
+        "label": "Elasticity estimate",
+        "color": "#8b5cf6",
+        "position": {
+          "x": 760,
+          "y": 300
+        }
+      },
+      {
+        "id": "pricing_engine",
+        "type": "inference",
+        "label": "Price search within corridor",
+        "color": "#ef4444",
+        "position": {
+          "x": 980,
+          "y": 160
+        }
+      },
+      {
+        "id": "redis_cache",
+        "type": "storage",
+        "label": "Redis forecast cache (optional)",
+        "color": "#6b7280",
+        "position": {
+          "x": 980,
+          "y": 300
+        }
+      },
+      {
+        "id": "decision",
+        "type": "api",
+        "label": "Price decision + reason",
+        "color": "#06b6d4",
+        "position": {
+          "x": 1200,
+          "y": 160
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "sales_history",
+        "target": "feature_eng",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "external_inputs",
+        "target": "feature_eng",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "kafka_events",
+        "target": "sales_history",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "feature_eng",
+        "target": "prophet_model",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "feature_eng",
+        "target": "xgboost_model",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "prophet_model",
+        "target": "ensemble",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "xgboost_model",
+        "target": "ensemble",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "sales_history",
+        "target": "elasticity",
+        "type": "connection"
+      },
+      {
+        "id": "e9",
+        "source": "ensemble",
+        "target": "pricing_engine",
+        "type": "connection"
+      },
+      {
+        "id": "e10",
+        "source": "elasticity",
+        "target": "pricing_engine",
+        "type": "connection"
+      },
+      {
+        "id": "e11",
+        "source": "ensemble",
+        "target": "redis_cache",
+        "type": "connection"
+      },
+      {
+        "id": "e12",
+        "source": "pricing_engine",
+        "target": "decision",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/demand_pricing/ensemble.py",
+  "externalLinks": [
+    {
+      "title": "Prophet documentation",
+      "url": "https://facebook.github.io/prophet/"
+    },
+    {
+      "title": "XGBoost Python API",
+      "url": "https://xgboost.readthedocs.io/en/stable/python/python_api.html"
+    }
+  ]
+}

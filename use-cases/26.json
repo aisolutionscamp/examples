@@ -1,0 +1,7 @@
+{
+  "id": 26,
+  "title": "Personalized Learning AI Tutor Platform",
+  "description": "<p>Learners in one class work at very different levels, and a teacher cannot give each of them individual practice and feedback. An adaptive tutor should estimate what each learner already knows, choose the next exercise accordingly and explain mistakes in plain language.</p><p><strong>Constraints:</strong> estimates must be based on the learner's answers, not on assumptions such as learning styles; generated questions and explanations must be checkable by a teacher; learner data, often of minors, must be handled under data-protection rules (e.g. GDPR) and kept to a minimum.</p>",
+  "goals": "<ul><li>Track a mastery estimate per skill that is updated after every answer</li><li>Introduce a skill only after its prerequisites are mastered</li><li>Grade short answers deterministically, not by the language model</li><li>Give a step-by-step explanation after every wrong answer</li><li>Validate the mastery model on real answer logs before using it for decisions, e.g. by comparing predicted and actual correct-answer rates</li></ul>",
+  "tags": ["Education", "Personalized Learning", "Adaptive Learning", "Knowledge Tracing", "LLM", "Learning Analytics", "EdTech"]
+}

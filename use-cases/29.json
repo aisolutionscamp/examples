@@ -1,0 +1,15 @@
+{
+  "id": 29,
+  "title": "Autonomous Quality Control in Manufacturing",
+  "description": "<p>Manual visual inspection is slow, tiring and inconsistent between shifts, and small surface defects such as scratches, dents, spots and cracks are easy to miss. At the same time, images of defective parts are rare, so there is little data to train a classic defect classifier.</p><p>The goal is a camera-based inspection that learns what good parts look like, flags parts that deviate, and shows the operator where the suspicious area is.</p><ul><li><strong>Data</strong>: many images of good parts, few or no labeled defects at the start.</li><li><strong>Constraints</strong>: the false-reject rate of good parts must stay low, because every rejected good part costs material and time; the decision must keep up with the line speed; inference should run on a PC at the line without a cloud connection.</li><li><strong>Setup</strong>: fixed camera position and lighting; the system must be recalibrated when material, lighting or camera change.</li></ul>",
+  "goals": "<ul><li>False-reject rate of good parts at most 1 % on a held-out set of good parts.</li><li>Recall of at least 95 % per defect type on a labeled test set of real defects.</li><li>A decision per part within the line's cycle time (e.g. under 200 ms per image).</li><li>For every rejected part, show the location of the suspicious area to the operator.</li></ul>",
+  "tags": [
+    "Manufacturing",
+    "Quality Control",
+    "Computer Vision",
+    "Anomaly Detection",
+    "Defect Detection",
+    "Edge AI",
+    "ONNX"
+  ]
+}

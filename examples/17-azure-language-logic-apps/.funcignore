@@ -1,0 +1,5 @@
+tests/
+.venv/
+.env
+local.settings.json
+logic-app/

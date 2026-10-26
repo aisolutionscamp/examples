@@ -1,0 +1,44 @@
+{
+  "solutionId": 23,
+  "projectId": 32,
+  "title": "Website FAQ Chatbot with JavaScript",
+  "description": "<p>A lightweight chat widget that answers common customer questions from a JSON knowledge base. It runs entirely in the browser: plain JavaScript modules, no framework, no server, no AI model and no API costs.</p><ul><li>Keyword matching with stopword removal, synonyms, light stemming and IDF weights, so rare words such as \"refund\" decide the match.</li><li>A confidence threshold: below it, the bot gives a fallback answer with your contact address instead of a wrong answer.</li><li>Clickable suggestions for related questions and chat history in <code>localStorage</code>.</li><li>Embedded with one <code>&lt;script type=\"module\"&gt;</code> tag; colors are CSS variables.</li></ul>",
+  "aiTools": ["JavaScript (ES modules)", "JSON knowledge base", "TF-IDF style keyword matching", "localStorage", "node:test"],
+  "prompts": null,
+  "language": "JavaScript",
+  "implementationSteps": [
+    "Collect the 10 to 50 questions customers ask most often and write them into faq.json with short answers.",
+    "Add alternative phrasings, keywords and synonyms that customers really use.",
+    "Normalize and tokenize questions: lowercase, strip accents and punctuation, remove stopwords, map synonyms, stem suffixes.",
+    "Score each FAQ entry by the IDF-weighted share of the question's words it contains and pick the best one.",
+    "Return a fallback answer with your contact address when the best score is below the threshold (default 0.35).",
+    "Build the widget: toggle button, message list, suggestion buttons and input form; render text with textContent only.",
+    "Test with npm test: every FAQ question must find its own answer, and your own paraphrased questions must find the right one.",
+    "Embed the widget on your website with one script tag and adjust the colors in chatbot.css."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>Answers are computed in the browser in well under a millisecond for a few hundred FAQ entries; no network call after the FAQ file is loaded.</li><li>The whole widget is three small files without dependencies.</li><li>Matching quality depends on how well the FAQ covers your customers' words; review unanswered questions regularly.</li></ul>",
+  "userExperience": "<p>Visitors click a chat button in the corner, see three example questions, and type their own. The answer appears immediately, with related questions as buttons. If the bot does not know an answer, it says so and shows your contact address. The conversation is kept when the visitor moves to another page. Works on mobile and desktop.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "widget", "type": "api", "label": "Chat Widget (browser)", "color": "#06b6d4", "position": {"x": 100, "y": 150}},
+      {"id": "faq_json", "type": "dataset", "label": "faq.json Knowledge Base", "color": "#10b981", "position": {"x": 300, "y": 300}},
+      {"id": "tokenizer", "type": "preprocessing", "label": "Normalize, Synonyms, Stemming", "color": "#f59e0b", "position": {"x": 300, "y": 150}},
+      {"id": "matcher", "type": "inference", "label": "IDF Keyword Scoring", "color": "#8b5cf6", "position": {"x": 500, "y": 150}},
+      {"id": "threshold", "type": "monitoring", "label": "Threshold + Fallback", "color": "#ec4899", "position": {"x": 700, "y": 150}},
+      {"id": "history", "type": "storage", "label": "localStorage History", "color": "#6b7280", "position": {"x": 900, "y": 150}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "widget", "target": "tokenizer", "type": "connection"},
+      {"id": "e2", "source": "faq_json", "target": "tokenizer", "type": "connection"},
+      {"id": "e3", "source": "tokenizer", "target": "matcher", "type": "connection"},
+      {"id": "e4", "source": "matcher", "target": "threshold", "type": "connection"},
+      {"id": "e5", "source": "threshold", "target": "history", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/matcher.js",
+  "externalLinks": [
+    {"title": "MDN: JavaScript modules", "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules"},
+    {"title": "Node.js test runner", "url": "https://nodejs.org/api/test.html"}
+  ]
+}

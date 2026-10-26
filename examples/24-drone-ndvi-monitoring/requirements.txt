@@ -1,0 +1,4 @@
+numpy==2.5.4
+tifffile==2026.9.20
+# LZW/JPEG/... decoders for compressed orthomosaics (tifffile itself only handles zlib/deflate)
+imagecodecs==2026.10.10

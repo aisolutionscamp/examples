@@ -1,0 +1,55 @@
+{
+  "solutionId": 11,
+  "projectId": 17,
+  "title": "Hugging Face Transformers + FastAPI Microservice",
+  "description": "<p>A self-hosted email classification service. Two Transformer models, fine-tuned from <code>distilbert-base-multilingual-cased</code> on your own labeled emails, predict urgency and department. A FastAPI app serves them with Redis caching; no external AI API is involved, so emails stay on your servers.</p><ul><li><code>train.py</code> fine-tunes both models from a CSV with a plain PyTorch loop and reports held-out accuracy and macro F1.</li><li><code>POST /classify</code> returns labels, per-label scores and a <code>needs_review</code> flag when the confidence is low.</li><li>Identical emails are answered from the Redis cache; the service keeps working if Redis is down.</li><li><code>/metrics</code> shows request counts, cache hits, latency and the label distribution; Docker Compose runs API and Redis.</li></ul>",
+  "aiTools": ["Hugging Face Transformers", "PyTorch", "DistilBERT (multilingual)", "FastAPI", "Redis", "Docker"],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Export labeled support emails (subject, body, urgency, department) from your ticket system into a CSV.",
+    "Install the pinned dependencies (CPU build of PyTorch by default).",
+    "Run train.py: it fine-tunes distilbert-base-multilingual-cased once per task and prints held-out accuracy and macro F1.",
+    "Save the two models with their tokenizers to models/urgency and models/department.",
+    "Load both models in the FastAPI app at startup and clean each email (quotes, signature, whitespace) before tokenizing.",
+    "Return labels, scores and a needs_review flag when the lower of the two confidences is below MIN_CONFIDENCE.",
+    "Cache results in Redis by a SHA-256 hash of the email for one hour, and ignore cache errors.",
+    "Expose /health and /metrics, and start API and Redis with docker compose up.",
+    "Retrain regularly with agent corrections and compare the new held-out metrics before you replace the models."
+  ],
+  "performance": "<p><strong>Targets, not measured results:</strong></p><ul><li>Classification accuracy of 85 % or more on a held-out split of your own emails before you enable automatic routing; <code>train.py</code> prints the actual value.</li><li>Expected well under 200 ms per email on a modern CPU (two DistilBERT passes, up to 256 tokens); repeated emails are served from the cache. Measure on your hardware.</li><li>Scale by running more API containers; the models are read-only.</li></ul>",
+  "userExperience": "<p>Developers call one JSON endpoint from the ticket system or a mail hook and get urgency, department and confidence back. Interactive API docs are available at <code>/docs</code>. Support teams see tickets pre-sorted, and low-confidence ones are marked for manual review. Data never leaves your infrastructure.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "training_data", "type": "dataset", "label": "Labeled Emails (CSV)", "color": "#10b981", "position": {"x": 100, "y": 350}},
+      {"id": "training_pipeline", "type": "training", "label": "train.py Fine-Tuning", "color": "#8b5cf6", "position": {"x": 300, "y": 350}},
+      {"id": "api_gateway", "type": "api", "label": "FastAPI /classify", "color": "#06b6d4", "position": {"x": 100, "y": 100}},
+      {"id": "redis_cache", "type": "storage", "label": "Redis Cache", "color": "#6b7280", "position": {"x": 300, "y": 0}},
+      {"id": "text_processor", "type": "preprocessing", "label": "Email Cleanup + Tokenizer", "color": "#f59e0b", "position": {"x": 300, "y": 100}},
+      {"id": "bert_urgency", "type": "model", "label": "Urgency Model (DistilBERT)", "color": "#3b82f6", "position": {"x": 500, "y": 50}},
+      {"id": "bert_department", "type": "model", "label": "Department Model (DistilBERT)", "color": "#3b82f6", "position": {"x": 500, "y": 200}},
+      {"id": "classification_merger", "type": "inference", "label": "Merge + needs_review", "color": "#8b5cf6", "position": {"x": 700, "y": 100}},
+      {"id": "model_monitor", "type": "monitoring", "label": "/metrics Counters", "color": "#ec4899", "position": {"x": 900, "y": 100}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "api_gateway", "target": "redis_cache", "type": "connection"},
+      {"id": "e2", "source": "api_gateway", "target": "text_processor", "type": "connection"},
+      {"id": "e3", "source": "text_processor", "target": "bert_urgency", "type": "connection"},
+      {"id": "e4", "source": "text_processor", "target": "bert_department", "type": "connection"},
+      {"id": "e5", "source": "bert_urgency", "target": "classification_merger", "type": "connection"},
+      {"id": "e6", "source": "bert_department", "target": "classification_merger", "type": "connection"},
+      {"id": "e7", "source": "classification_merger", "target": "redis_cache", "type": "connection"},
+      {"id": "e8", "source": "classification_merger", "target": "model_monitor", "type": "connection"},
+      {"id": "e9", "source": "training_data", "target": "training_pipeline", "type": "connection"},
+      {"id": "e10", "source": "training_pipeline", "target": "bert_urgency", "type": "connection"},
+      {"id": "e11", "source": "training_pipeline", "target": "bert_department", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "app/classifier.py",
+  "externalLinks": [
+    {"title": "Transformers: fine-tuning for text classification", "url": "https://huggingface.co/docs/transformers/tasks/sequence_classification"},
+    {"title": "distilbert-base-multilingual-cased model card", "url": "https://huggingface.co/distilbert/distilbert-base-multilingual-cased"},
+    {"title": "FastAPI documentation", "url": "https://fastapi.tiangolo.com/"}
+  ]
+}

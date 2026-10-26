@@ -1,0 +1,7 @@
+{
+  "id": 33,
+  "title": "Automated Social Media Content Generator",
+  "description": "<p>Small businesses need regular posts on several social networks but rarely have time to write them. A tool should create posts, captions and hashtags from a short description of the business, its audience and the topic, in the right format and length for each platform.</p><h3>Constraints</h3><ul><li>Different formats per platform (for example Instagram, Facebook, LinkedIn, X) with their length limits.</li><li>Only facts from the brief: no invented prices, discounts or dates.</li><li>A person reviews every post before it is published.</li><li>Output that can be imported into a scheduling tool.</li></ul>",
+  "goals": "<ul><li>A week of posts for four platforms is generated from one brief in under 10 minutes.</li><li>All generated posts stay within each platform's length limit.</li><li>At least 8 out of 10 posts are published with only minor edits during a four-week trial.</li><li>No post contains facts that are not in the brief, checked during review.</li></ul>",
+  "tags": ["Marketing", "Social Media", "Content Generation", "Automation"]
+}

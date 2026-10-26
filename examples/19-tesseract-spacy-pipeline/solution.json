@@ -1,0 +1,201 @@
+{
+  "solutionId": 15,
+  "projectId": 19,
+  "title": "Open-Source Pipeline with Tesseract OCR and spaCy",
+  "description": "<p>A self-hosted pipeline built only from open-source parts, for teams that cannot send documents to a cloud service.</p><ul><li><strong>Text</strong>: the PDF text layer is read with <strong>pypdf</strong>; scans and images go through <strong>Tesseract OCR</strong> after cleanup with Pillow (grayscale, contrast, denoise, binarize).</li><li><strong>Document type</strong>: a TF-IDF + logistic regression classifier (<strong>scikit-learn</strong>) labels invoices, contracts, receipts and reports.</li><li><strong>Fields</strong>: <strong>spaCy</strong> with an EntityRuler finds dates, amounts and e-mail addresses without downloading a model; rules turn them into invoice number, dates, subtotal, tax, total or contract parties and dates.</li><li><strong>Checks</strong>: required fields, subtotal + tax = total and date order decide between <code>valid</code>, <code>requires_review</code> and <code>invalid</code>.</li><li>A <strong>FastAPI</strong> service with a Dockerfile (including Tesseract) exposes it as <code>POST /documents</code>.</li></ul>",
+  "aiTools": [
+    "Tesseract OCR",
+    "spaCy",
+    "scikit-learn",
+    "pypdf",
+    "Pillow",
+    "FastAPI"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Install Tesseract (the Dockerfile adds tesseract-ocr) and the pinned Python packages.",
+    "Read the text layer of PDFs with pypdf; if a page has almost no text, OCR its embedded images.",
+    "Clean up images (grayscale, autocontrast, median filter, threshold) and run Tesseract with --oem 3 --psm 6.",
+    "Classify the document type with TF-IDF + logistic regression; retrain it on your own labelled documents.",
+    "Run a blank spaCy English pipeline with EntityRuler patterns for dates, money and e-mail addresses.",
+    "Map entities to fields from the words before them on the same line (Total, VAT, Due, effective, between ... and ...).",
+    "Normalize dates to ISO and amounts to numbers, then validate required fields, totals and date order.",
+    "Serve the pipeline with FastAPI: file type and size limits, random temp file names, clear error codes.",
+    "Measure field accuracy on a labelled sample of your documents and add rules or a trained NER model where it falls short."
+  ],
+  "performance": "<p><strong>Targets, not measured results:</strong></p><ul><li>Header fields (number, dates, totals) correct on at least 95 % of clean, labelled invoices in your own sample.</li><li>Text PDFs take well under a second; OCR typically takes a few seconds per page on one CPU core, depending on resolution.</li><li>Throughput scales with the number of worker processes; no per-page fees.</li></ul>",
+  "userExperience": "<p>Teams send a file to one REST endpoint and get JSON back: document type with confidence, extracted fields, how the text was obtained (text layer or OCR) and a validation status with reasons. Documents never leave your own servers, and rules can be adjusted in code when a new layout shows up.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "file_upload",
+        "type": "api",
+        "label": "FastAPI upload",
+        "color": "#06b6d4",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "pdf_text",
+        "type": "preprocessing",
+        "label": "PDF text layer (pypdf)",
+        "color": "#f59e0b",
+        "position": {
+          "x": 320,
+          "y": 80
+        }
+      },
+      {
+        "id": "image_prep",
+        "type": "preprocessing",
+        "label": "Image cleanup (Pillow)",
+        "color": "#f59e0b",
+        "position": {
+          "x": 320,
+          "y": 240
+        }
+      },
+      {
+        "id": "tesseract",
+        "type": "model",
+        "label": "Tesseract OCR",
+        "color": "#3b82f6",
+        "position": {
+          "x": 540,
+          "y": 240
+        }
+      },
+      {
+        "id": "classifier",
+        "type": "model",
+        "label": "Document type (TF-IDF + logistic regression)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 760,
+          "y": 150
+        }
+      },
+      {
+        "id": "spacy",
+        "type": "model",
+        "label": "spaCy EntityRuler (dates, money, e-mail)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 980,
+          "y": 150
+        }
+      },
+      {
+        "id": "fields",
+        "type": "preprocessing",
+        "label": "Field rules (total, due date, parties)",
+        "color": "#f59e0b",
+        "position": {
+          "x": 1200,
+          "y": 150
+        }
+      },
+      {
+        "id": "validator",
+        "type": "monitoring",
+        "label": "Validation",
+        "color": "#ec4899",
+        "position": {
+          "x": 1420,
+          "y": 150
+        }
+      },
+      {
+        "id": "json_output",
+        "type": "api",
+        "label": "JSON response",
+        "color": "#06b6d4",
+        "position": {
+          "x": 1640,
+          "y": 150
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "file_upload",
+        "target": "pdf_text",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "file_upload",
+        "target": "image_prep",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "pdf_text",
+        "target": "image_prep",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "image_prep",
+        "target": "tesseract",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "pdf_text",
+        "target": "classifier",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "tesseract",
+        "target": "classifier",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "classifier",
+        "target": "spacy",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "spacy",
+        "target": "fields",
+        "type": "connection"
+      },
+      {
+        "id": "e9",
+        "source": "fields",
+        "target": "validator",
+        "type": "connection"
+      },
+      {
+        "id": "e10",
+        "source": "validator",
+        "target": "json_output",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/docproc/entities.py",
+  "externalLinks": [
+    {
+      "title": "Tesseract OCR documentation",
+      "url": "https://tesseract-ocr.github.io/"
+    },
+    {
+      "title": "spaCy rule-based matching and EntityRuler",
+      "url": "https://spacy.io/usage/rule-based-matching"
+    },
+    {
+      "title": "pypdf documentation",
+      "url": "https://pypdf.readthedocs.io/"
+    }
+  ]
+}

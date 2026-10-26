@@ -1,0 +1,7 @@
+{{ parts.hook }}
+
+{{ parts.body }}
+
+{{ parts.call_to_action }}{% if brief.link %} (link in bio){% endif %}
+
+{% for tag in hashtags %}#{{ tag }}{% if not loop.last %} {% endif %}{% endfor %}

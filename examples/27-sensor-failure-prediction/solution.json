@@ -1,0 +1,55 @@
+{
+  "solutionId": null,
+  "projectId": 27,
+  "title": "Failure risk and anomaly score from sensor time series with scikit-learn and FastAPI",
+  "description": "<p>A small, complete predictive-maintenance pipeline for machines that report sensor readings once per cycle (or per minute, per shift). It turns raw readings into rolling-window features and trains three scikit-learn models on run-to-failure history:</p><ul><li><strong>Failure classifier</strong> (<code>HistGradientBoostingClassifier</code>): probability that the machine fails within the next N cycles (default 30).</li><li><strong>Remaining useful life</strong> (<code>HistGradientBoostingRegressor</code>): a rough estimate of cycles left, capped at 150.</li><li><strong>Anomaly score</strong> (<code>IsolationForest</code>): trained only on healthy windows, so it also reacts to failure patterns that were never labeled.</li></ul><p>A FastAPI endpoint scores the latest readings of one machine and returns the probability, the RUL estimate, the anomaly score and an alert flag. A synthetic data generator (wear that raises temperature and vibration) makes the example run without real data. A loader for the public NASA C-MAPSS turbofan files is included so you can try it on a real benchmark.</p><p>The split is by machine, never by row, so the test score is not inflated by neighbouring cycles of the same machine.</p>",
+  "aiTools": ["scikit-learn", "pandas", "FastAPI", "joblib"],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Collect run-to-failure history: one row per machine and cycle with the sensor values; the RUL (cycles until failure) is known after the fact for machines that failed or were replaced.",
+    "Generate synthetic data with generate_fleet() or load C-MAPSS with load_cmapss() to test the pipeline before connecting real data.",
+    "Build rolling-window features per machine and sensor (last value, mean, standard deviation, slope over 10 cycles) that only use past readings.",
+    "Label each row 1 if the machine fails within the next 30 cycles, and split train and test by machine with GroupShuffleSplit.",
+    "Train a HistGradientBoostingClassifier for failure risk and a HistGradientBoostingRegressor for capped RUL; report ROC AUC, average precision and MAE on the unseen machines.",
+    "Fit an IsolationForest on healthy windows only (RUL > 100) and set the anomaly threshold at the 99th percentile of their scores.",
+    "Save everything as one joblib file and serve it with FastAPI: POST /score takes the last readings of a machine and returns probability, RUL estimate, anomaly score and alert.",
+    "Tune the alert probability with maintenance planners against the cost of a missed failure versus an unnecessary inspection, then monitor alerts and retrain when new failures are recorded."
+  ],
+  "performance": "<p><strong>Targets, not measured results.</strong> On the synthetic data the tests require ROC AUC above 0.9 on unseen machines; that only shows the pipeline works, because the synthetic wear is easy to detect.</p><ul><li>Target for real equipment: at least 80 % of failures flagged 30 or more cycles ahead, at an alert rate the maintenance team can handle (agree a number, e.g. at most 2 false alerts per machine and month).</li><li>Training on 60 synthetic machines (about 15,000 rows) takes seconds on a laptop CPU; scoring one machine takes milliseconds.</li><li>Results depend on how many real failures you have. With fewer than 10 to 20 recorded failures per failure mode, rely more on the anomaly score than on the classifier.</li></ul>",
+  "userExperience": "<p>A maintenance planner or a dashboard calls <code>POST /score</code> with the latest readings of a machine and gets back JSON like <code>{\"failure_probability\": 0.82, \"rul_estimate\": 18.4, \"anomaly_score\": 0.61, \"anomaly\": true, \"alert\": true}</code>. Alerts can be turned into work orders in the CMMS. Training prints the test metrics so the team can see how well the model does on machines it has not seen.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "sensors", "type": "dataset", "label": "Sensor readings per cycle", "color": "#10b981", "position": {"x": 0, "y": 150}},
+      {"id": "features", "type": "preprocessing", "label": "Rolling-window features", "color": "#f59e0b", "position": {"x": 260, "y": 150}},
+      {"id": "train", "type": "training", "label": "Train (split by machine)", "color": "#8b5cf6", "position": {"x": 520, "y": 0}},
+      {"id": "classifier", "type": "model", "label": "Failure classifier (HGB)", "color": "#3b82f6", "position": {"x": 780, "y": 0}},
+      {"id": "regressor", "type": "model", "label": "RUL regressor (HGB)", "color": "#3b82f6", "position": {"x": 780, "y": 150}},
+      {"id": "iforest", "type": "model", "label": "IsolationForest anomaly score", "color": "#3b82f6", "position": {"x": 780, "y": 300}},
+      {"id": "bundle", "type": "storage", "label": "model.joblib", "color": "#6b7280", "position": {"x": 1040, "y": 150}},
+      {"id": "api", "type": "api", "label": "FastAPI POST /score", "color": "#06b6d4", "position": {"x": 1300, "y": 150}},
+      {"id": "alerts", "type": "monitoring", "label": "Alerts / work orders", "color": "#ec4899", "position": {"x": 1560, "y": 150}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "sensors", "target": "features", "type": "connection"},
+      {"id": "e2", "source": "features", "target": "train", "type": "connection"},
+      {"id": "e3", "source": "train", "target": "classifier", "type": "connection"},
+      {"id": "e4", "source": "train", "target": "regressor", "type": "connection"},
+      {"id": "e5", "source": "train", "target": "iforest", "type": "connection"},
+      {"id": "e6", "source": "classifier", "target": "bundle", "type": "connection"},
+      {"id": "e7", "source": "regressor", "target": "bundle", "type": "connection"},
+      {"id": "e8", "source": "iforest", "target": "bundle", "type": "connection"},
+      {"id": "e9", "source": "bundle", "target": "api", "type": "connection"},
+      {"id": "e10", "source": "features", "target": "api", "type": "connection"},
+      {"id": "e11", "source": "api", "target": "alerts", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/pdm/model.py",
+  "externalLinks": [
+    {"title": "scikit-learn: HistGradientBoostingClassifier", "url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingClassifier.html"},
+    {"title": "scikit-learn: IsolationForest", "url": "https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html"},
+    {"title": "NASA Prognostics Data Repository (C-MAPSS)", "url": "https://www.nasa.gov/intelligent-systems-division/discovery-and-systems-health/pcoe/pcoe-data-set-repository/"},
+    {"title": "FastAPI documentation", "url": "https://fastapi.tiangolo.com/"}
+  ]
+}

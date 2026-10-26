@@ -1,0 +1,53 @@
+{
+  "solutionId": 10,
+  "projectId": 17,
+  "title": "Azure AI Language + Logic Apps Workflow",
+  "description": "<p>A Microsoft 365 based triage workflow. A Logic App picks up new emails from a shared Outlook mailbox and calls an Azure Function. The function analyzes the email with <strong>Azure AI Language</strong> (language detection, sentiment, named entities, key phrases) through the <code>azure-ai-textanalytics</code> SDK and applies readable routing rules.</p><ul><li>Category (billing, technical, sales, general) from keyword rules in English, Spanish and German.</li><li>Urgency from urgent wording and negative sentiment; very negative, urgent and unsupported-language emails are escalated.</li><li>Optional reply draft with Azure OpenAI for routine emails.</li><li>The Logic App sends the draft to the agents' mailbox or alerts the escalation mailbox. Nothing is sent to customers automatically.</li></ul>",
+  "aiTools": ["Azure AI Language", "Azure Logic Apps", "Azure Functions", "Azure OpenAI", "Office 365 Outlook connector"],
+  "prompts": "Reply draft system prompt (Azure OpenAI): You draft replies for customer support agents. Reply in the language with ISO code {language}. Address the concrete points in the email, give clear next steps, and do not promise refunds, credits or dates. If information is missing, ask for it. Keep it under 150 words. The agent will review the draft before sending.",
+  "language": "Python",
+  "implementationSteps": [
+    "Create an Azure AI Language resource and note its endpoint and key.",
+    "Write the analyzer: call detect_language, then analyze_sentiment, recognize_entities and extract_key_phrases with the detected language.",
+    "Define routing rules: category keywords per language, urgent patterns, and escalation for urgent, very negative or unsupported-language emails.",
+    "Add an optional Azure OpenAI call that drafts a reply for routine emails only.",
+    "Expose the logic as an HTTP-triggered Azure Function (Python v2 model) that converts the HTML body to plain text first.",
+    "Import the Logic App workflow: Outlook trigger, HTTP call to the function, Parse JSON, and a condition on escalate.",
+    "Route escalated emails to the escalation mailbox and send drafts to the agents' mailbox for review.",
+    "Run the offline tests, then test end to end with a few sample emails in each language.",
+    "Use the structured log lines in Application Insights to watch volume per category and escalation rate."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>Four Azure AI Language calls per email, plus one Azure OpenAI call for routine emails; usually a few seconds per email.</li><li>The Outlook trigger polls every 3 minutes, so emails are triaged within minutes of arrival.</li><li>Keyword routing should be checked against a labeled sample of your own emails. If it stays below your target (for example 85 %), switch to Azure AI Language custom text classification.</li></ul>",
+  "userExperience": "<p>Agents keep working in Outlook. Each routine email arrives in the agents' mailbox with category, urgency, sentiment and a reply draft to review. Urgent or very negative emails go to the escalation mailbox with high importance, so upset customers are seen first. Spanish and German emails get drafts in the customer's language.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "outlook_trigger", "type": "api", "label": "Outlook Trigger (Logic App)", "color": "#06b6d4", "position": {"x": 100, "y": 150}},
+      {"id": "function", "type": "api", "label": "Azure Function /api/triage", "color": "#06b6d4", "position": {"x": 300, "y": 150}},
+      {"id": "html_to_text", "type": "preprocessing", "label": "HTML to Text", "color": "#f59e0b", "position": {"x": 500, "y": 150}},
+      {"id": "language_service", "type": "model", "label": "Azure AI Language (language, sentiment, entities, key phrases)", "color": "#3b82f6", "position": {"x": 700, "y": 150}},
+      {"id": "classification_logic", "type": "preprocessing", "label": "Routing Rules", "color": "#f59e0b", "position": {"x": 900, "y": 150}},
+      {"id": "azure_openai", "type": "model", "label": "Azure OpenAI Draft", "color": "#3b82f6", "position": {"x": 1100, "y": 50}},
+      {"id": "agent_mailbox", "type": "api", "label": "Agents' Mailbox", "color": "#06b6d4", "position": {"x": 1300, "y": 50}},
+      {"id": "escalation_queue", "type": "monitoring", "label": "Escalation Mailbox", "color": "#ec4899", "position": {"x": 1100, "y": 250}},
+      {"id": "app_insights", "type": "monitoring", "label": "Application Insights Logs", "color": "#ec4899", "position": {"x": 900, "y": 350}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "outlook_trigger", "target": "function", "type": "connection"},
+      {"id": "e2", "source": "function", "target": "html_to_text", "type": "connection"},
+      {"id": "e3", "source": "html_to_text", "target": "language_service", "type": "connection"},
+      {"id": "e4", "source": "language_service", "target": "classification_logic", "type": "connection"},
+      {"id": "e5", "source": "classification_logic", "target": "azure_openai", "type": "connection"},
+      {"id": "e6", "source": "azure_openai", "target": "agent_mailbox", "type": "connection"},
+      {"id": "e7", "source": "classification_logic", "target": "escalation_queue", "type": "connection"},
+      {"id": "e8", "source": "classification_logic", "target": "app_insights", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "azure_triage/analyzer.py",
+  "externalLinks": [
+    {"title": "Azure AI Language overview", "url": "https://learn.microsoft.com/en-us/azure/ai-services/language-service/overview"},
+    {"title": "azure-ai-textanalytics for Python", "url": "https://learn.microsoft.com/en-us/python/api/overview/azure/ai-textanalytics-readme"},
+    {"title": "Office 365 Outlook connector", "url": "https://learn.microsoft.com/en-us/connectors/office365/"},
+    {"title": "Azure Functions Python developer guide", "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-python"}
+  ]
+}

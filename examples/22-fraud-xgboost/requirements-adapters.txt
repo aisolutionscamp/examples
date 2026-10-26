@@ -1,0 +1,4 @@
+# Optional infrastructure adapters (not needed for the offline tests)
+redis==8.1.0
+confluent-kafka==2.16.0
+elasticsearch==9.5.1

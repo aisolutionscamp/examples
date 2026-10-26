@@ -1,0 +1,24 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      MIN_CONFIDENCE: "0.6"
+    volumes:
+      - ./models:/srv/models:ro
+    depends_on:
+      - redis
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+  # One-off training job: docker compose --profile train run --rm train
+  train:
+    build: .
+    profiles: ["train"]
+    user: root
+    command: ["python", "train.py", "data/sample_emails.csv", "--out", "/srv/models", "--epochs", "4"]
+    volumes:
+      - ./models:/srv/models
+      - ./data:/srv/data:ro

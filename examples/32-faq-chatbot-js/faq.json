@@ -1,0 +1,94 @@
+{
+  "business": "Example Coffee Roasters",
+  "contact": "hello@example.com",
+  "synonyms": {
+    "cost": "price", "costs": "price", "pricing": "price", "prices": "price", "fee": "price", "fees": "price",
+    "delivery": "shipping", "deliver": "shipping", "ship": "shipping", "shipped": "shipping", "postage": "shipping",
+    "money": "refund", "reimburse": "refund", "refunds": "refund",
+    "hours": "open", "opening": "open", "close": "open", "closed": "open",
+    "beans": "coffee", "espresso": "coffee",
+    "pay": "payment", "paypal": "payment", "card": "payment",
+    "subscribe": "subscription", "plan": "subscription",
+    "track": "tracking",
+    "gluten": "allergen", "nuts": "allergen", "lactose": "allergen", "vegan": "allergen"
+  },
+  "entries": [
+    {
+      "id": "shipping-cost",
+      "question": "How much does shipping cost?",
+      "alternatives": ["What are the delivery fees?", "Is shipping free?"],
+      "keywords": ["shipping", "price", "free"],
+      "answer": "Shipping within Germany costs 4.90 EUR and is free for orders from 40 EUR. EU shipping costs 9.90 EUR."
+    },
+    {
+      "id": "shipping-time",
+      "question": "How long does delivery take?",
+      "alternatives": ["When will my order arrive?", "How fast do you ship?"],
+      "keywords": ["shipping", "days", "arrive", "long", "fast"],
+      "answer": "We roast on Mondays and Thursdays and ship the next day. Delivery takes 1-3 business days in Germany and 3-6 in the EU."
+    },
+    {
+      "id": "order-tracking",
+      "question": "Where is my order?",
+      "alternatives": ["How can I track my package?"],
+      "keywords": ["tracking", "order", "package", "status"],
+      "answer": "You get a tracking link by email when your order ships. You can also see the status under My account > Orders."
+    },
+    {
+      "id": "returns",
+      "question": "Can I return a product and get a refund?",
+      "alternatives": ["What is your return policy?"],
+      "keywords": ["return", "refund", "policy", "exchange", "back", "send"],
+      "answer": "Unopened products can be returned within 14 days. We refund the purchase price within 5 business days after the return arrives."
+    },
+    {
+      "id": "opening-hours",
+      "question": "What are your opening hours?",
+      "alternatives": ["When is the café open?"],
+      "keywords": ["open", "cafe", "shop", "saturday", "sunday"],
+      "answer": "Our café is open Monday to Friday 8:00-18:00 and Saturday 9:00-16:00. It is closed on Sundays."
+    },
+    {
+      "id": "coffee-price",
+      "question": "How much is a bag of coffee?",
+      "alternatives": ["What do your beans cost?"],
+      "keywords": ["coffee", "price", "bag", "250g", "1kg"],
+      "answer": "A 250 g bag costs 9.50 to 14 EUR depending on the origin. 1 kg bags start at 32 EUR."
+    },
+    {
+      "id": "grind",
+      "question": "Do you grind the coffee for me?",
+      "alternatives": ["Can I order ground coffee?"],
+      "keywords": ["grind", "ground", "filter", "french", "press", "machine"],
+      "answer": "Yes. Choose whole beans or a grind for espresso, filter or French press when you add the coffee to your cart."
+    },
+    {
+      "id": "payment",
+      "question": "Which payment methods do you accept?",
+      "alternatives": ["Can I pay with PayPal?"],
+      "keywords": ["payment", "credit", "invoice", "methods"],
+      "answer": "We accept credit card, PayPal and bank transfer. Business customers can pay by invoice."
+    },
+    {
+      "id": "subscription",
+      "question": "Do you offer a coffee subscription?",
+      "alternatives": ["How do I cancel my subscription?"],
+      "keywords": ["subscription", "monthly", "cancel", "pause"],
+      "answer": "Yes, you get a fresh bag every 2 or 4 weeks. You can pause or cancel any time under My account > Subscription."
+    },
+    {
+      "id": "allergens",
+      "question": "Do your products contain allergens?",
+      "alternatives": ["Are your pastries vegan?"],
+      "keywords": ["allergen", "pastries", "milk", "ingredients"],
+      "answer": "Our coffee contains no allergens. For pastries in the café, ask the staff for the allergen list."
+    },
+    {
+      "id": "wholesale",
+      "question": "Do you sell to cafés and offices?",
+      "alternatives": ["Do you have wholesale prices?"],
+      "keywords": ["wholesale", "business", "office", "bulk", "b2b"],
+      "answer": "Yes, we supply cafés and offices. Write to hello@example.com with your expected monthly volume and we will send an offer."
+    }
+  ]
+}

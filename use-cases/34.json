@@ -1,0 +1,14 @@
+{
+  "id": 34,
+  "title": "Simple Photo Background Remover",
+  "description": "<p>Small online shops photograph their own products, often on a table with a light background. Marketplaces and shop themes expect clean cut-outs: transparent PNGs or products on pure white. Editing every photo by hand takes several minutes per image. The goal is an easy-to-use tool that removes the background from a whole folder of product photos automatically.</p><h3>Requirements</h3><ul><li>Process a folder of JPG/PNG photos in one run.</li><li>Output transparent PNGs, or JPGs on a pure white background.</li><li>Run on a normal laptop without a GPU or paid service.</li><li>Keep the original resolution and file names.</li></ul><h3>Challenges</h3><ul><li>Products with colors close to the background, light labels and reflections.</li><li>Shadows and uneven light on the background.</li><li>Fine details such as cables, fur or transparent parts.</li></ul>",
+  "goals": "<ul><li>At least 9 of 10 studio-style product photos need no manual touch-up.</li><li>Processing time below 2 seconds per photo on a laptop CPU.</li><li>Failed cut-outs are easy to spot from the tool's output (foreground share per image).</li></ul>",
+  "tags": [
+    "E-commerce",
+    "Computer Vision",
+    "Image Processing",
+    "Background Removal",
+    "OpenCV",
+    "Product Photos"
+  ]
+}

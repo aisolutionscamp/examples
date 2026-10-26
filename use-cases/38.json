@@ -1,0 +1,7 @@
+{
+  "id": 38,
+  "title": "YouTube Video Summarizer",
+  "description": "<p>Tutorials, talks and lectures on YouTube are often 30 minutes or longer, and it is hard to tell in advance which parts are relevant. A tool should produce a short summary, the key points and chapter timestamps, so viewers can decide what to watch and jump to the right place.</p><p><strong>Constraints:</strong> transcripts of long videos exceed what fits comfortably into one model request, so they must be processed in parts; some videos have no captions, so speech-to-text is needed as a fallback; timestamps must come from the transcript, not be invented; access to YouTube content must respect its terms of service.</p>",
+  "goals": "<ul><li>Accept all common YouTube URL forms (watch, youtu.be, shorts, embed, live)</li><li>Use existing captions when available and transcribe the audio only as a fallback</li><li>Handle transcripts of any length by chunking</li><li>Return a summary, 5 to 7 key points and chapters whose timestamps all appear in the transcript</li><li>Allow running fully locally with an open model for private or internal videos</li></ul>",
+  "tags": ["Education", "Text Summarization", "YouTube", "Speech-to-Text", "LLM", "Study Tool"]
+}

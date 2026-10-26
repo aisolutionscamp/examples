@@ -1,0 +1,48 @@
+{
+  "solutionId": 30,
+  "projectId": 39,
+  "title": "Conversation Practice Bot with LLM Corrections and Optional Speech",
+  "description": "<p>A Python practice bot that role-plays everyday situations (restaurant, train station, doctor, hotel, small talk) in the language you learn and corrects the mistakes in your last message.</p><ul><li><strong>Conversation:</strong> a chat model via an OpenAI-compatible API (OpenAI or a local model through Ollama) stays in character and adapts to your CEFR level.</li><li><strong>Corrections:</strong> the model answers in JSON with the reply, a list of corrections with short explanations in your native language, and a translation.</li><li><strong>Speech (optional):</strong> faster-whisper transcribes your recording and flags words it did not understand clearly; Piper reads the reply aloud locally.</li></ul><p>There is no pronunciation score: recognition confidence is shown as a hint only.</p>",
+  "aiTools": ["Python", "OpenAI Python SDK", "OpenAI API (gpt-6-luna)", "Ollama (optional, local)", "faster-whisper", "Piper TTS", "OpenAI Speech API (optional, deprecated)"],
+  "prompts": "You are a patient Spanish tutor playing the waiter in a small restaurant at lunchtime. The learner is the guest ordering food, level A2 (CEFR), native language English.\nRules:\n- Stay in character and answer in simple Spanish suited to level A2, at most 3 sentences, and end with a question that keeps the conversation going.\n- Check only the learner's last message for grammar, vocabulary and word-order mistakes. Ignore missing accents and punctuation if the meaning is clear.\n- Explain each mistake briefly in English.\nAnswer with JSON only: {\"reply\": str, \"corrections\": [{\"original\": str, \"corrected\": str, \"explanation\": str}], \"translation\": str} where \"translation\" is your reply in English.",
+  "language": "Python",
+  "implementationSteps": [
+    "Define scenarios with setting, bot role and learner role",
+    "Build a system prompt from scenario, target language, CEFR level and native language",
+    "Send the conversation to an OpenAI-compatible chat model with JSON output and parse reply, corrections and translation, tolerating code fences and plain-text answers",
+    "Keep only in-character replies in the history and trim it to the last 12 turns",
+    "Optionally transcribe speech with faster-whisper with the language forced and list words with confidence below 0.5",
+    "Optionally synthesize the reply with Piper (local) or the OpenAI Speech API",
+    "Show all corrections of the session at the end",
+    "Test offline with a fake chat client, fake Whisper model, fake Piper voice and fake Speech API"
+  ],
+  "performance": "<p><strong>Expectations, not measurements:</strong></p><ul><li>One chat request per turn; the delay depends on the model and endpoint.</li><li>faster-whisper <code>small</code> on CPU transcribes a short spoken sentence in a few seconds.</li><li>Correction quality depends on the model. Small local models miss more mistakes and sometimes break the JSON format; the bot then shows the reply without corrections.</li></ul>",
+  "userExperience": "<p>The learner picks a scenario, language and level and chats in the terminal. After each message they see the corrections with short explanations, the reply in the target language and its translation. With speech enabled they can record a message, see which words were not understood clearly, and listen to the reply. At the end the bot lists all corrections of the session.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {"id": "mic", "type": "dataset", "label": "Learner text or recording", "color": "#64748b", "position": {"x": 0, "y": 100}},
+      {"id": "stt", "type": "model", "label": "faster-whisper STT (optional)", "color": "#8b5cf6", "position": {"x": 250, "y": 0}},
+      {"id": "session", "type": "preprocessing", "label": "Practice session (scenario, level, history)", "color": "#3b82f6", "position": {"x": 450, "y": 100}},
+      {"id": "llm", "type": "api", "label": "Chat model (OpenAI-compatible)", "color": "#f59e0b", "position": {"x": 700, "y": 100}},
+      {"id": "parse", "type": "inference", "label": "Reply + corrections (JSON)", "color": "#10b981", "position": {"x": 900, "y": 100}},
+      {"id": "tts", "type": "model", "label": "Piper / OpenAI TTS (optional)", "color": "#8b5cf6", "position": {"x": 1100, "y": 0}}
+    ],
+    "edges": [
+      {"id": "e1", "source": "mic", "target": "stt", "type": "connection"},
+      {"id": "e2", "source": "mic", "target": "session", "type": "connection"},
+      {"id": "e3", "source": "stt", "target": "session", "type": "connection"},
+      {"id": "e4", "source": "session", "target": "llm", "type": "connection"},
+      {"id": "e5", "source": "llm", "target": "parse", "type": "connection"},
+      {"id": "e6", "source": "parse", "target": "session", "type": "connection"},
+      {"id": "e7", "source": "parse", "target": "tts", "type": "connection"}
+    ]
+  },
+  "codeSnippetFile": "src/language_bot/session.py",
+  "externalLinks": [
+    {"title": "faster-whisper", "url": "https://github.com/SYSTRAN/faster-whisper"},
+    {"title": "Piper TTS", "url": "https://github.com/OHF-Voice/piper1-gpl"},
+    {"title": "Piper voices", "url": "https://huggingface.co/rhasspy/piper-voices"},
+    {"title": "Ollama OpenAI compatibility", "url": "https://docs.ollama.com/api/openai-compatibility"}
+  ]
+}

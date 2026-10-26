@@ -1,0 +1,13 @@
+{
+  "id": 18,
+  "title": "Inventory Demand Forecasting with Dynamic Pricing",
+  "description": "<p>A retailer wants to predict demand per product and store and adjust prices automatically, so that popular items do not sell out and slow items do not pile up in stock. Forecasts have to account for seasonality, holidays and local events, weather, competitor prices and the sales history.</p><h3>Requirements</h3><ul><li>Forecast daily demand for 10,000+ SKUs across 50+ stores.</li><li>Update price recommendations every 4 hours from current sales and stock levels.</li><li>Keep prices inside business rules: minimum margin, maximum gap to competitors, maximum change per update.</li><li>Integrate with the existing ERP (for example SAP or Oracle) and POS systems.</li><li>Explain every price change to store managers in plain words.</li></ul><h3>Technical challenges</h3><ul><li>Seasonal patterns, promotions and trend changes.</li><li>External data: weather forecasts, event calendars, competitor prices.</li><li>Balancing revenue with customer perception and brand positioning.</li><li>Supply constraints and lead times.</li><li>Uncertainty: forecasts need prediction intervals, not just a single number.</li></ul>",
+  "goals": "<ul><li>7-day forecast error (MAPE) below 20 % per SKU/store on a rolling backtest, and better than a seasonal-naive baseline.</li><li>Product availability of at least 95 % while inventory holding costs go down (target: 20 % lower).</li><li>Price recommendations refreshed every 4 hours for all active SKUs.</li><li>Every price change stays inside the configured corridor and comes with a one-line reason.</li></ul>",
+  "tags": [
+    "Retail",
+    "demand-forecasting",
+    "dynamic-pricing",
+    "inventory-management",
+    "machine-learning"
+  ]
+}

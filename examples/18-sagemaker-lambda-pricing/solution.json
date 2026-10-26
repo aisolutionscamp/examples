@@ -1,0 +1,179 @@
+{
+  "solutionId": 13,
+  "projectId": 18,
+  "title": "AWS SageMaker Autopilot + Lambda Price Recommendations",
+  "description": "<p>A managed AWS setup: <strong>Amazon SageMaker Autopilot</strong> trains a demand model from sales history in S3, the best candidate runs on a <strong>SageMaker real-time endpoint</strong>, and an <strong>AWS Lambda</strong> function behind API Gateway turns predicted demand into a price recommendation.</p><ul><li>Autopilot (AutoML V2, tabular regression) predicts units sold from SKU, store, calendar, holiday flag, our price and the competitor price.</li><li>For each request the Lambda function asks the endpoint for predicted units at 21 prices inside a corridor (minimum margin, maximum gap to the competitor, maximum change) in a single call.</li><li>Sales are capped at stock on hand and the price with the highest expected profit is returned.</li><li>Decisions are logged and a price-change metric is sent to <strong>Amazon CloudWatch</strong>.</li></ul><p>The code uses the real boto3 APIs; the tests run offline with botocore's Stubber and a fake endpoint.</p>",
+  "aiTools": [
+    "Amazon SageMaker Autopilot",
+    "AWS Lambda",
+    "Amazon S3",
+    "Amazon API Gateway",
+    "Amazon CloudWatch",
+    "boto3"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Export sales history with SKU, store, date features, price and competitor price into one CSV (the example generates synthetic data).",
+    "Upload the CSV to S3 and start an Autopilot job with create_auto_ml_job_v2 (tabular regression on units_sold, objective MAE).",
+    "Wait for the job, then create a SageMaker model, endpoint config and real-time endpoint from the best candidate.",
+    "Deploy the Lambda function with numpy, the endpoint name in its environment and permission for sagemaker:InvokeEndpoint and cloudwatch:PutMetricData.",
+    "In the handler, validate the request and build 21 candidate prices inside the business-rule corridor.",
+    "Send one CSV request with a row per candidate price, read the predicted units and force them to be non-increasing in price.",
+    "Cap sales at stock, choose the price with the highest expected profit and return it with the predicted units.",
+    "Log each decision and publish a price-change metric to CloudWatch; put API Gateway with authentication in front of the function.",
+    "Retrain on a schedule and switch the endpoint only when the new candidate has a lower validation MAE."
+  ],
+  "performance": "<p><strong>Expectations, not measured results:</strong></p><ul><li>Autopilot ranks candidates by MAE on a 20 % validation split; check MAE and MAPE per SKU before using the model.</li><li>A Lambda request makes one endpoint call for all 21 candidate prices, so latency is roughly one model invocation plus Lambda overhead.</li><li>Lambda and the endpoint scale separately; size the endpoint (instance type, auto scaling) for your peak request rate.</li></ul>",
+  "userExperience": "<p>Pricing systems or store tools call one HTTPS endpoint with SKU, store, date, current price, cost, stock and competitor price and get back the recommended price, the predicted units, the expected profit, the allowed price range and whether stock limited the decision. Operations teams follow the price-change metric and decision logs in CloudWatch. There is no server to maintain; retraining is a new Autopilot job.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "sales_export",
+        "type": "dataset",
+        "label": "Sales history CSV",
+        "color": "#10b981",
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "s3_training",
+        "type": "storage",
+        "label": "S3 training data",
+        "color": "#6b7280",
+        "position": {
+          "x": 300,
+          "y": 100
+        }
+      },
+      {
+        "id": "autopilot",
+        "type": "training",
+        "label": "SageMaker Autopilot (regression)",
+        "color": "#8b5cf6",
+        "position": {
+          "x": 500,
+          "y": 100
+        }
+      },
+      {
+        "id": "endpoint",
+        "type": "model",
+        "label": "SageMaker real-time endpoint",
+        "color": "#3b82f6",
+        "position": {
+          "x": 700,
+          "y": 100
+        }
+      },
+      {
+        "id": "api_gateway",
+        "type": "api",
+        "label": "API Gateway",
+        "color": "#06b6d4",
+        "position": {
+          "x": 300,
+          "y": 260
+        }
+      },
+      {
+        "id": "lambda_pricing",
+        "type": "inference",
+        "label": "Lambda: price corridor + profit search",
+        "color": "#ef4444",
+        "position": {
+          "x": 500,
+          "y": 260
+        }
+      },
+      {
+        "id": "cloudwatch",
+        "type": "monitoring",
+        "label": "CloudWatch metrics and logs",
+        "color": "#ec4899",
+        "position": {
+          "x": 700,
+          "y": 260
+        }
+      },
+      {
+        "id": "response",
+        "type": "api",
+        "label": "Price decision (JSON)",
+        "color": "#06b6d4",
+        "position": {
+          "x": 500,
+          "y": 400
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "sales_export",
+        "target": "s3_training",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "s3_training",
+        "target": "autopilot",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "autopilot",
+        "target": "endpoint",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "api_gateway",
+        "target": "lambda_pricing",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "lambda_pricing",
+        "target": "endpoint",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "endpoint",
+        "target": "lambda_pricing",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "lambda_pricing",
+        "target": "cloudwatch",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "lambda_pricing",
+        "target": "response",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/pricing_service/lambda_function.py",
+  "externalLinks": [
+    {
+      "title": "SageMaker Autopilot: create a regression or classification job (AutoML V2)",
+      "url": "https://docs.aws.amazon.com/sagemaker/latest/dg/autopilot-create-experiment.html"
+    },
+    {
+      "title": "boto3 SageMaker create_auto_ml_job_v2",
+      "url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker/client/create_auto_ml_job_v2.html"
+    },
+    {
+      "title": "AWS Lambda Python handler",
+      "url": "https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"
+    }
+  ]
+}

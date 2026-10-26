@@ -1,0 +1,16 @@
+{
+  "id": 28,
+  "title": "Voice Assistant for Elderly Care",
+  "description": "<p>Older people who live alone often need help remembering medication and appointments, and their families want to know quickly when something goes wrong. Screens and small buttons are hard to use for many of them; speaking is easier.</p><p>The goal is a voice assistant that understands normal speech, answers in short and clear sentences, manages reminders, and alerts a chosen family member or carer when the user asks for help.</p><ul><li><strong>Privacy</strong>: conversations happen in the home. Audio and transcripts should be processed on the device and not stored in the cloud.</li><li><strong>Safety</strong>: the assistant is not a medical device and not an emergency service. It must not give medical advice, and in an emergency it must always point to the local emergency number. Escalation must work even if the language model gives a poor answer.</li><li><strong>Usability</strong>: slow, clear speech output; tolerance for older voices, pauses and dialects; reminders repeated until confirmed.</li></ul>",
+  "goals": "<ul><li>A spoken reply starts within about 3 seconds of the end of the user's sentence on the target device.</li><li>Every test phrase from an agreed list of emergency phrases triggers a message to the emergency contact, verified in a regular test.</li><li>Reminders are announced within 1 minute of their time and repeated until the user confirms them.</li><li>No audio or transcript leaves the device except the emergency message to the chosen contact.</li></ul>",
+  "tags": [
+    "Healthcare",
+    "Elderly Care",
+    "Voice Assistant",
+    "Speech Recognition",
+    "Speech Synthesis",
+    "Local LLM",
+    "Accessibility",
+    "Privacy"
+  ]
+}

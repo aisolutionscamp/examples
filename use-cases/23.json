@@ -1,0 +1,14 @@
+{
+  "id": 23,
+  "title": "Medical Image Classification for Research and Education",
+  "description": "<p><strong>Research and education use case. The results are not a medical device and must not be used for diagnosis or other clinical decisions.</strong></p><p>Researchers and students who work with X-ray, CT or MRI data need a reproducible starting point for image classification experiments: reading DICOM files correctly, keeping identifying data out of experiments, training a convolutional neural network, and evaluating it with the metrics used in medical imaging studies. The goal is a small, transparent pipeline that classifies images into two classes (for example \"finding\" and \"no finding\") on a public or approved dataset and makes it easy to inspect what the model looks at.</p><h3>Requirements</h3><ul><li>Read DICOM pixel data with correct rescaling, windowing and photometric interpretation.</li><li>Remove direct identifiers before images are used in an experiment.</li><li>Train on a CPU for small experiments and on a GPU with transfer learning for larger ones.</li><li>Report sensitivity and specificity on a held-out test set.</li><li>Show heatmaps of the image regions that drive the output.</li></ul><h3>Constraints</h3><ul><li>Only data with suitable licenses and approvals; storage and processing that meet data-protection rules (for example GDPR, HIPAA).</li><li>Splits by patient, not by image, to avoid overly optimistic results.</li><li>Clinical use would require validation and regulatory clearance as a medical device, which is out of scope.</li></ul>",
+  "goals": "<ul><li>The full pipeline (DICOM loading, training, evaluation) runs end to end on a public dataset with one command.</li><li>Sensitivity and specificity reported with confidence intervals on a patient-level held-out split.</li><li>Grad-CAM heatmaps reviewed for a sample of test images to check for shortcuts such as text markers.</li><li>No direct patient identifiers in any file used for training.</li></ul>",
+  "tags": [
+    "Healthcare",
+    "Medical Imaging",
+    "Computer Vision",
+    "Deep Learning",
+    "DICOM",
+    "Research"
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "solutionId": 16,
+  "projectId": 18,
+  "title": "TensorFlow LSTM Forecast with BigQuery",
+  "description": "<p>A Google Cloud variant: sales, weather and holiday data live in <strong>Google BigQuery</strong>, a small <strong>TensorFlow/Keras</strong> LSTM predicts the next 7 days of demand per product and store, and an HTTP function (<strong>Cloud Run functions</strong>) serves forecasts and writes them back to BigQuery for dashboards in <strong>Looker Studio</strong>.</p><ul><li>Parameterized BigQuery SQL builds one row per day (units, price, temperature, holiday); missing days count as zero sales.</li><li>The LSTM reads the last 28 days and outputs 7 days at once; the forecast band is the 10th to 90th percentile of validation errors.</li><li>Training reports the model's MAPE next to a seasonal-naive baseline (same weekday last week).</li><li>An optional step recommends a price from the 7-day forecast, stock and a price corridor.</li></ul><p>The example trains on synthetic data on CPU; BigQuery is mocked in the tests.</p>",
+  "aiTools": [
+    "TensorFlow",
+    "Keras",
+    "Google BigQuery",
+    "Cloud Run functions",
+    "Looker Studio"
+  ],
+  "prompts": null,
+  "language": "Python",
+  "implementationSteps": [
+    "Create BigQuery tables for daily sales, stores, weather, holidays and a demand_forecasts output table.",
+    "Load 28+ days of history per SKU/store with a parameterized query and fill days without sales with zero.",
+    "Add day-of-week features (sine/cosine) and standardize all features on the training period.",
+    "Cut the series into 28-day input windows with 7-day targets and keep the last 8 weeks for validation.",
+    "Train a Keras LSTM(32) with MAE loss and early stopping; compare validation MAPE with the seasonal-naive baseline.",
+    "Save the model (.keras) with scaling parameters and error percentiles, and deploy it with the HTTP function.",
+    "On each request, read the last 28 days from BigQuery, forecast 7 days, append the rows to demand_forecasts and return JSON.",
+    "Optionally pass price, cost, stock and competitor price to get a price recommendation for the horizon.",
+    "Build a Looker Studio report on demand_forecasts and retrain on a schedule."
+  ],
+  "performance": "<p><strong>Targets, not measured results:</strong></p><ul><li>30-day MAPE around 12 % is a common goal for stable, high-volume products; slow movers will be worse.</li><li>The model should beat the seasonal-naive baseline on a hold-out period; on the example's synthetic data it does (checked in the tests).</li><li>Training one SKU/store on two years of daily data takes seconds on a CPU; the HTTP function scales with request volume.</li></ul>",
+  "userExperience": "<p>Planners open a Looker Studio report that shows the 7-day forecast with its band next to actual sales. Pricing tools call one HTTP endpoint with SKU and store (plus optional price inputs) and get the forecast and a recommended price with the allowed range. Each training run prints how the model compares with the simple baseline, so teams can see where it adds value.</p>",
+  "accuracyRate": null,
+  "graphData": {
+    "nodes": [
+      {
+        "id": "bq_tables",
+        "type": "storage",
+        "label": "BigQuery: sales, stores, weather, holidays",
+        "color": "#6b7280",
+        "position": {
+          "x": 100,
+          "y": 150
+        }
+      },
+      {
+        "id": "sql_features",
+        "type": "preprocessing",
+        "label": "Parameterized SQL + daily features",
+        "color": "#f59e0b",
+        "position": {
+          "x": 320,
+          "y": 150
+        }
+      },
+      {
+        "id": "lstm_training",
+        "type": "training",
+        "label": "Keras LSTM training (train.py)",
+        "color": "#8b5cf6",
+        "position": {
+          "x": 540,
+          "y": 60
+        }
+      },
+      {
+        "id": "model_files",
+        "type": "storage",
+        "label": "Saved model (.keras + meta.json)",
+        "color": "#6b7280",
+        "position": {
+          "x": 760,
+          "y": 60
+        }
+      },
+      {
+        "id": "http_function",
+        "type": "inference",
+        "label": "HTTP function forecast_http",
+        "color": "#ef4444",
+        "position": {
+          "x": 760,
+          "y": 220
+        }
+      },
+      {
+        "id": "pricing",
+        "type": "model",
+        "label": "Price recommendation (optional)",
+        "color": "#3b82f6",
+        "position": {
+          "x": 980,
+          "y": 300
+        }
+      },
+      {
+        "id": "bq_forecasts",
+        "type": "storage",
+        "label": "BigQuery demand_forecasts",
+        "color": "#6b7280",
+        "position": {
+          "x": 980,
+          "y": 140
+        }
+      },
+      {
+        "id": "looker",
+        "type": "monitoring",
+        "label": "Looker Studio / BI",
+        "color": "#ec4899",
+        "position": {
+          "x": 1200,
+          "y": 140
+        }
+      },
+      {
+        "id": "client",
+        "type": "api",
+        "label": "Pricing system / store tool",
+        "color": "#06b6d4",
+        "position": {
+          "x": 540,
+          "y": 320
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "bq_tables",
+        "target": "sql_features",
+        "type": "connection"
+      },
+      {
+        "id": "e2",
+        "source": "sql_features",
+        "target": "lstm_training",
+        "type": "connection"
+      },
+      {
+        "id": "e3",
+        "source": "lstm_training",
+        "target": "model_files",
+        "type": "connection"
+      },
+      {
+        "id": "e4",
+        "source": "model_files",
+        "target": "http_function",
+        "type": "connection"
+      },
+      {
+        "id": "e5",
+        "source": "sql_features",
+        "target": "http_function",
+        "type": "connection"
+      },
+      {
+        "id": "e6",
+        "source": "client",
+        "target": "http_function",
+        "type": "connection"
+      },
+      {
+        "id": "e7",
+        "source": "http_function",
+        "target": "bq_forecasts",
+        "type": "connection"
+      },
+      {
+        "id": "e8",
+        "source": "http_function",
+        "target": "pricing",
+        "type": "connection"
+      },
+      {
+        "id": "e9",
+        "source": "bq_forecasts",
+        "target": "looker",
+        "type": "connection"
+      }
+    ]
+  },
+  "codeSnippetFile": "src/keras_forecast/model.py",
+  "externalLinks": [
+    {
+      "title": "Keras time series forecasting guide (TensorFlow)",
+      "url": "https://www.tensorflow.org/tutorials/structured_data/time_series"
+    },
+    {
+      "title": "BigQuery parameterized queries (Python)",
+      "url": "https://cloud.google.com/bigquery/docs/parameterized-queries"
+    },
+    {
+      "title": "Cloud Run functions: write HTTP functions",
+      "url": "https://cloud.google.com/run/docs/write-functions"
+    }
+  ]
+}

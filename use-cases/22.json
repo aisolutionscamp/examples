@@ -1,0 +1,15 @@
+{
+  "id": 22,
+  "title": "Fraud Detection for E-Commerce Payments",
+  "description": "<p>Online shops and payment providers must decide within the payment flow whether a card-not-present transaction is legitimate. Fraud often shows up as patterns rather than single signals: a burst of purchases within minutes, a new device, a country the customer never shopped from, amounts far above the customer's usual spending. The goal is a system that scores every transaction in real time with machine learning on behavioral and velocity features, and either approves it, asks for additional verification or declines it.</p><h3>Requirements</h3><ul><li>A decision before authorization, within the latency budget of the checkout.</li><li>Features computed from the customer's recent history without using information from the future.</li><li>Three outcomes: approve, step-up verification (for example 3-D Secure), decline.</li><li>A reason for every decision that analysts and support staff can understand.</li><li>Scales to peak shopping days and fits into existing event streams.</li></ul><h3>Challenges</h3><ul><li>Fraud is rare (well below 1 % of transactions), so the classes are highly imbalanced.</li><li>Every false positive blocks or annoys a real customer.</li><li>Labels (chargebacks) arrive weeks later, and fraud patterns change over time.</li></ul>",
+  "goals": "<ul><li>Scoring latency below 50 ms per transaction at the 99th percentile, including feature lookup.</li><li>False-positive rate below 0.5 % at the review threshold, measured on a later time period than the training data.</li><li>Recall on confirmed fraud reported and tracked monthly on the same time-based split.</li><li>Every decision stored with its score and its top reasons.</li></ul>",
+  "tags": [
+    "E-commerce",
+    "Fraud Detection",
+    "Machine Learning",
+    "XGBoost",
+    "Real-time Processing",
+    "Feature Engineering",
+    "Payments"
+  ]
+}

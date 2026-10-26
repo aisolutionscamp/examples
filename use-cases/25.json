@@ -1,0 +1,15 @@
+{
+  "id": 25,
+  "title": "Privacy-Preserving Crowd and Traffic Counting",
+  "description": "<p>Cities, transport operators and venue managers need numbers about how public spaces are used: how many pedestrians and cyclists pass a street, how full a square or platform is, how much traffic of each vehicle type uses a road. Manual counts are expensive and rare. The goal is a video analytics system that counts people and vehicles automatically and outputs only anonymous, aggregated numbers.</p><h3>Requirements</h3><ul><li>Count people, bicycles, cars, buses and trucks crossing a line, per direction and time interval.</li><li>Measure the occupancy of defined zones over time.</li><li>Run on existing cameras, on a CPU or a small edge device.</li><li>Deliver counts to a dashboard or database.</li></ul><h3>Privacy constraints</h3><ul><li>No face recognition, no biometric identification and no tracking of individuals across cameras or over time.</li><li>Video frames are processed in memory and not stored; only aggregate counts leave the system.</li><li>Purpose, legal basis and retention are documented (for example in a GDPR data protection impact assessment) and people are informed with signage.</li></ul>",
+  "goals": "<ul><li>Counts within 10 % of a manual count for each camera, checked on at least one hour of footage per camera.</li><li>No video frames or images of people stored or transmitted; only per-interval counts.</li><li>Counts available on the dashboard within one aggregation interval (for example one minute).</li><li>Runs at least 5 processed frames per second per camera on the target hardware.</li></ul>",
+  "tags": [
+    "Public Sector",
+    "Computer Vision",
+    "YOLO",
+    "Video Analytics",
+    "Privacy by Design",
+    "Smart Cities",
+    "Traffic Counting"
+  ]
+}

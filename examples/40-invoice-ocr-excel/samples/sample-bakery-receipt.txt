@@ -1,0 +1,9 @@
+Sample Bakery GmbH
+Receipt No. 2026-0815
+Date 26.10.2026 08:14
+2 x Bread roll        1,20
+1 x Coffee            2,80
+Net                   3,36 EUR
+VAT 19%               0,64 EUR
+TOTAL                 4,00 EUR
+Thank you for your visit
