@@ -25,7 +25,7 @@ for (const name of fs.readdirSync(path.join(root, "examples")).sort()) {
     if (!meta[f]) throw new Error(`${name}: ${f} missing`);
   }
   const record = {
-    key: name,
+    example: name,
     solutionId: meta.solutionId,
     projectId: meta.projectId,
     ...Object.fromEntries(SOLUTION_FIELDS.map((f) => [f, meta[f] ?? null])),
