@@ -17,7 +17,9 @@ class PwnedPasswordsClient:
 
     def pwned_count(self, password: str) -> int:
         """How often the password appears in known breaches (0 = not found)."""
-        digest = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+        # SHA-1 is what the Pwned Passwords range API is keyed on; it is used for a
+        # k-anonymity lookup (only the first 5 hex chars are sent), not for storage.
+        digest = hashlib.sha1(password.encode("utf-8"), usedforsecurity=False).hexdigest().upper()
         prefix, suffix = digest[:5], digest[5:]
         response = self._client.get(
             API_URL + prefix,

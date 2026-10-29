@@ -22,7 +22,7 @@ jobs:
         with:
           persist-credentials: false
       - id: list
-        run: echo "examples=$(ls examples | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
+        run: echo "examples=$(find examples -mindepth 1 -maxdepth 1 -type d ! -name '.*' -printf '%f\n' | sort | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
 
   test:
     name: ${{ matrix.example }}

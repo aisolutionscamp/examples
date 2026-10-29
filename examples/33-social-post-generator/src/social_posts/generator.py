@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
@@ -53,8 +53,11 @@ Platform: {platform} (style: {style}). The finished post must stay under {max_ch
 Use only facts from the brief. Do not invent prices, dates, discounts or claims.
 Return at most {max_hashtags} hashtags."""
 
+# The post templates (*.j2) produce plain text, so they are not HTML-escaped;
+# any .html/.xml template added later would be escaped automatically.
 _env = Environment(loader=FileSystemLoader(TEMPLATES), undefined=StrictUndefined,
-                   trim_blocks=True, lstrip_blocks=True, autoescape=False)  # plain text, not HTML
+                   trim_blocks=True, lstrip_blocks=True,
+                   autoescape=select_autoescape(enabled_extensions=("html", "htm", "xml"), default=False))
 
 
 def clean_hashtags(tags: list[str], limit: int) -> list[str]:
