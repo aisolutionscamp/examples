@@ -1,0 +1,3 @@
+# GitHub (linguist) treats examples/ as documentation and ignores its code in
+# the language stats, so code scanning would skip the Python examples.
+examples/** linguist-documentation=false
